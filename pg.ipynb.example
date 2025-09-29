@@ -1,0 +1,36 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import django\n",
+    "\n",
+    "PROJECT_TITLE = \"app\"\n",
+    "os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", PROJECT_TITLE + \".settings\")\n",
+    "os.environ[\"DJANGO_ALLOW_ASYNC_UNSAFE\"] = \"True\"\n",
+    "django.setup()\n",
+    "\n",
+    "from bs4 import BeautifulSoup\n",
+    "import pandas as pd\n",
+    "import json\n",
+    "import re\n",
+    "from django.db.models import *"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

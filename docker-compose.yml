@@ -1,0 +1,118 @@
+x-variables:
+  project_name: &project_name cohostrs
+  postgres_user: &postgres_user postgres
+  postgres_password: &postgres_password postgres
+
+services:
+  web:
+    build: .
+    container_name: ch_backend
+    restart: always
+    command: gunicorn --bind 0.0.0.0:8000 app.wsgi:application
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
+    entrypoint:
+      - /entrypoint.sh
+    ports:
+      - "8080:8000"
+    environment:
+      DEF_DB_ENGINE: django.db.backends.postgresql
+      DEF_DB_NAME: *project_name
+      DEF_DB_USER: *postgres_user
+      DEF_DB_PASSWORD: *postgres_password
+      DEF_DB_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      C_FORCE_ROOT: true
+      VICTORIA_LOG_NET: http://victorialogs:9428
+    networks:
+      - ch_backend_default
+      - vl_net
+
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: ch_postgres_db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./.docker/db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: *project_name
+      POSTGRES_USER: *postgres_user
+      POSTGRES_PASSWORD: *postgres_password
+      POSTGRES_INITDB_ARGS: "--auth-host=md5 --auth-local=trust"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ch_backend_default
+
+  redis:
+    image: redis:alpine
+    container_name: ch_redis_cache
+    restart: always
+    networks:
+      - ch_backend_default
+
+  celery_worker:
+    build: .
+    container_name: ch_celery_worker
+    command: celery -A app worker --loglevel=INFO
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app status"]
+    environment:
+      CELERY_BROKER_URL: redis://redis
+      DEF_DB_ENGINE: django.db.backends.postgresql
+      DEF_DB_NAME: *project_name
+      DEF_DB_USER: *postgres_user
+      DEF_DB_PASSWORD: *postgres_password
+      DEF_DB_HOST: db
+      C_FORCE_ROOT: true
+      VICTORIA_LOG_NET: http://victorialogs:9428
+    networks:
+      - ch_backend_default
+
+  celery_beat:
+    build: .
+    container_name: ch_celery_beat
+    command: celery -A app beat --loglevel=INFO
+    depends_on:
+      celery_worker:
+        condition: service_healthy
+    environment:
+      CELERY_BROKER_URL: redis://redis
+      DEF_DB_ENGINE: django.db.backends.postgresql
+      DEF_DB_NAME: *project_name
+      DEF_DB_USER: *postgres_user
+      DEF_DB_PASSWORD: *postgres_password
+      DEF_DB_HOST: db
+      C_FORCE_ROOT: true
+      VICTORIA_LOG_NET: http://victorialogs:9428
+    networks:
+      - ch_backend_default
+
+volumes:
+  postgres_data:
+  static_volume:
+
+networks:
+  ch_backend_default:
+    driver: bridge
+  vl_net:
+    external: true
