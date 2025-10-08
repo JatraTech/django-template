@@ -18,9 +18,7 @@ class UserAdmin(_UserAdmin):
             {
                 "fields": (
                     "is_active",
-                    # "status",
                     "user_role",
-                    "superior",
                     "is_staff",
                     "is_superuser",
                     "groups",
@@ -32,4 +30,3 @@ class UserAdmin(_UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
     search_fields = ["id", "first_name", "last_name"]
-    autocomplete_fields = ["superior"]

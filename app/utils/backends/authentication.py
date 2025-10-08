@@ -1,22 +1,21 @@
-from django.contrib.auth.backends import BaseBackend
-from django.contrib.auth import get_user_model, login
-from django.db.models.base import Model
-from app.utils.mixins.models.constants import ActivityStatusChoices
 from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 
 class StatusBackend(ModelBackend):
-    # def authenticate(self, request, username=None, password=None):
-    #     try:
-    #         user = User.objects.get(username=username)
-    #         if (
-    #             user.check_password(password)
-    #             and user.status == ActivityStatusChoices.ACTIVE
-    #         ):
-    #             return user
-    #         return None
-    #     except User.DoesNotExist:
-    #         return None
-    pass
+    """
+    Custom authentication backend that can be extended to check
+    access halt reasons or other custom authentication logic.
+    """
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        # Use Django's default authentication
+        user = super().authenticate(request, username, password, **kwargs)
+
+        # Add custom logic here if needed (e.g., check access_halt_reason)
+        # if user and user.access_halt_reason:
+        #     return None
+
+        return user
