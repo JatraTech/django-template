@@ -1,7 +1,6 @@
 import random
 import string
 import base64
-from typing import NamedTuple
 
 from django.db.models import Q
 from rest_framework import serializers

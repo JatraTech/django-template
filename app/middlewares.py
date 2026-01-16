@@ -1,6 +1,3 @@
-from django.http import JsonResponse
-
-
 class OverrideContentTypeMiddleware:
     """
     Middleware that overrides the Content-Type to `application/json`

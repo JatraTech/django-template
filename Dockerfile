@@ -1,51 +1,43 @@
-# Use official Python image
+# Stable Python base
 FROM python:3.13-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 
-    # GDAL_LIBRARY_PATH=/usr/lib/libgdal.so \
-    # GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so \
-    # PROJ_LIB=/usr/share/proj
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_LINK_MODE=copy \
+    PYTHONPATH=/app \
+    PATH="/root/.local/bin:${PATH}"
 
-# Set working directory
 WORKDIR /app
-COPY pyproject.toml /app     
 
-# Install system dependencies
+# Copy uv binary
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    binutils \
-    libproj-dev \
-    gdal-bin \
-    libdbus-1-3\
-    libatk1.0-0\
-    libatk-bridge2.0-0\ 
-    libcups2\           
-    libxkbcommon0\      
-    libatspi2.0-0\      
-    libxcomposite1\     
-    libxdamage1\        
-    libxfixes3\         
-    libxrandr2\         
-    libgbm1\            
-    libasound2\
+    build-essential \
+    libpq-dev \
+    libmagic1 \
+    curl \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PYTHONPATH="/app"
-RUN pip3 install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --without dev -q
-RUN playwright install chromium
-#RUN playwright install-deps
-# Copy project files
+# Copy dependency manifests first
+COPY pyproject.toml uv.lock* /app/
+
+# Install dependencies via uv
+RUN if [ -f uv.lock ]; then \
+      uv sync --frozen --no-dev; \
+    else \
+      uv sync --no-dev; \
+    fi
+
+# Copy the rest of the app
 COPY . .
-RUN python manage.py collectstatic --noinput
-# Expose port
+
 EXPOSE 8000
+
 COPY entrypoint.sh /entrypoint.sh
-# RUN if [ -f .env ]; then cp .env .env.example; fi
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
-
-# Run migrations and start the server
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "django_app.wsgi:application"]
-# ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

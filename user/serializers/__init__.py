@@ -1,6 +1,6 @@
 import re
 from django.contrib.auth.hashers import make_password
-from django.core.mail import send_mail, send_mass_mail
+from django.core.mail import send_mail
 from django.db.models import Q
 from rest_framework import serializers
 
@@ -22,12 +22,6 @@ class UserPermissionSerializer(BaseModelSerializer):
     class Meta:
         model = Permission
         fields = ["id", "app", "name", "codename"]
-
-
-class UserLiteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "full_name", "image"]
 
 
 class MiniUserSerializer(BaseModelSerializer):
@@ -103,10 +97,8 @@ class PartialUserCreationSerializer(BaseModelSerializer):
             "last_name",
             "dob",
             "phone",
-            "address",
             "email",
         ]
-        extra_kwargs = {"address": {"required": False, "allow_blank": True}}
 
     def create(self, validated_data):
         validated_data["is_active"] = False

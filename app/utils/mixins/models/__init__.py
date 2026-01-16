@@ -1,9 +1,6 @@
-from __future__ import annotations
-from typing import Iterable, Sequence, Type
+from typing import Iterable
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
-from app.utils.mixins.models.constants import ActivityStatusChoices
-from app.utils.mixins.models.fields import StatusField
 
 
 class ModelQuerySet(models.QuerySet):

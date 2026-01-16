@@ -1,4 +1,4 @@
-from rest_framework_nested import routers
+from rest_framework import routers
 from django.urls import path, include
 from user.views import UserViewSet
 from rest_framework_simplejwt.views import (
@@ -7,12 +7,10 @@ from rest_framework_simplejwt.views import (
 )
 
 from user.views.auth import AuthViewSet
-from user.views.teams import TeamViewSet
 
 router = routers.SimpleRouter()
 router.register(r"users", UserViewSet)
 router.register(r"auth", AuthViewSet, basename="auth")
-router.register(r"teams", TeamViewSet, basename="team")
 
 app_name = "user"
 urlpatterns = [

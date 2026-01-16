@@ -1,4 +1,15 @@
 #!/bin/sh
-poetry install --without dev
-python manage.py migrate
-exec gunicorn --bind 0.0.0.0:8000 app.wsgi:application --timeout 180
+set -e
+
+# Ensure deps are synced inside the container (dev-friendly)
+if [ -f uv.lock ]; then
+  uv sync --frozen --no-dev
+else
+  uv sync --no-dev
+fi
+
+uv run python manage.py migrate --noinput
+uv run python manage.py collectstatic --noinput
+
+# Execute the command passed to the container
+exec "$@"
