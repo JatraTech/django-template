@@ -1,43 +1,51 @@
-# Stable Python base
-FROM python:3.13-slim
+FROM python:3.12-slim-bookworm AS deps
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_SYSTEM_PYTHON=1 \
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
-    PYTHONPATH=/app \
-    PATH="/root/.local/bin:${PATH}"
+    UV_PROJECT_ENVIRONMENT=/app/.venv
 
-WORKDIR /app
-
-# Copy uv binary
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
-    libmagic1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+COPY pyproject.toml uv.lock* ./
+
+RUN uv sync --frozen --no-dev --no-install-project
+
+FROM python:3.12-slim-bookworm AS app
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    gosu \
+    libpq5 \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency manifests first
-COPY pyproject.toml uv.lock* /app/
+WORKDIR /app
 
-# Install dependencies via uv
-RUN if [ -f uv.lock ]; then \
-      uv sync --frozen --no-dev; \
-    else \
-      uv sync --no-dev; \
-    fi
+RUN groupadd -g ${APP_GID} appgroup \
+    && useradd -m -u ${APP_UID} -g appgroup appuser \
+    && mkdir -p /app/staticfiles /app/media
 
-# Copy the rest of the app
-COPY . .
+COPY --from=deps /app/.venv /app/.venv
+
+COPY --chown=appuser:appgroup . .
+
+RUN dos2unix /app/entrypoint.sh \
+    && chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
-
-COPY entrypoint.sh /entrypoint.sh
-RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,5 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
+from urllib.parse import urlparse
+
 from environs import Env
 
 env = Env()
@@ -44,7 +46,15 @@ APPS = [
     "user",
 ]
 
-INSTALLED_APPS = CORE_APPS + THIRD_PARTY_APPS + APPS
+INSTALLED_APPS = (
+    CORE_APPS
+    + THIRD_PARTY_APPS
+    + APPS
+    + [
+        # Must be last — deletes FileField/ImageField files on model delete and replace.
+        "django_cleanup.apps.CleanupConfig",
+    ]
+)
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -84,12 +94,13 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": env("DEF_DB_ENGINE", default="django.db.backends.postgresql"),
-        "NAME": env("DEF_DB_NAME", default="django_db"),
-        "USER": env("DEF_DB_USER", default="postgres"),
-        "PASSWORD": env("DEF_DB_PASSWORD", default="postgres"),
-        "HOST": env("DEF_DB_HOST", default="localhost"),
-        "PORT": env("DEF_DB_PORT", default="5432"),
+        "ENGINE": env("DB_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": env("DB_NAME", default="myproject"),
+        "USER": env("DB_USER", default="postgres"),
+        "PASSWORD": env("DB_PASSWORD", default="postgres"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
+        "CONN_MAX_AGE": env.int("DB_CONN_MAX_AGE", default=600),
     }
 }
 
@@ -176,11 +187,50 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=15),
 }
 
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_SERIALIZER = "json"
+def normalize_redis_base(url: str) -> str:
+    url = url.rstrip("/")
+    parsed = urlparse(url)
+    if parsed.path and parsed.path != "/":
+        raise ValueError("REDIS_URL must not include DB index")
+    return url
+
+
+REDIS_URL = normalize_redis_base(env("REDIS_URL", default="redis://localhost:6379"))
+
+
+def redis_url(db: int, override: str) -> str:
+    return env(override, default=f"{REDIS_URL}/{db}")
+
+
+CELERY_BROKER_URL = redis_url(0, "CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = redis_url(1, "CELERY_RESULT_BACKEND")
+CELERY_TASK_IGNORE_RESULT = env.bool("CELERY_TASK_IGNORE_RESULT", default=True)
+CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {}
+
+CACHE_REDIS_URL = redis_url(2, "CACHE_REDIS_URL")
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": CACHE_REDIS_URL,
+        "TIMEOUT": 120,
+    }
+}
+
+CHANNELS_ENABLED = env.bool("CHANNELS_ENABLED", default=False)
+if CHANNELS_ENABLED:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [redis_url(3, "CHANNELS_REDIS_URL")],
+            },
+        },
+    }
 
 
 # LOGGING = {
@@ -243,8 +293,6 @@ else:
     MEDIA_URL = "media/"
     MEDIA_ROOT = "media"
     STATIC_ROOT = "staticfiles"
-
-CELERY_ACCEPT_CONTENT = ["application/json", "pickle"]
 
 # Email Configuration
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -43,7 +44,15 @@ schema_urls = [
         name="redoc",
     ),
 ]
+
+
+def health_check(request):
+    """Lightweight health check for load balancers and Docker."""
+    return JsonResponse({"status": "ok"})
+
+
 urls = [
+    path("healthz", health_check, name="healthz"),
     path("admin/", admin.site.urls),
     re_path(r"^api/", include(api_urls)),
 ]
