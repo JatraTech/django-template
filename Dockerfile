@@ -38,7 +38,7 @@ WORKDIR /app
 
 RUN groupadd -g ${APP_GID} appgroup \
     && useradd -m -u ${APP_UID} -g appgroup appuser \
-    && mkdir -p /app/staticfiles /app/media
+    && install -d -o appuser -g appgroup /app/staticfiles /app/media
 
 COPY --from=deps /app/.venv /app/.venv
 

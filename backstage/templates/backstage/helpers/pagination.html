@@ -1,0 +1,7 @@
+{% load admin_list backstage %}
+
+{% if cl %}
+ {% include "backstage/helpers/sticky_footer_open.html" with pagination_footer=1 %}
+ {% pagination cl %}
+ {% include "backstage/helpers/sticky_footer_close.html" %}
+{% endif %}

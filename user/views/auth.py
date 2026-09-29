@@ -2,8 +2,8 @@ from rest_framework import decorators, response
 from rest_framework.viewsets import GenericViewSet
 
 from user.serializers.auth import (
-    SendResetPasswordEmailSerializer,
     ResetPasswordSerializer,
+    SendResetPasswordEmailSerializer,
 )
 
 
@@ -21,9 +21,7 @@ class AuthViewSet(GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return response.Response(
-            {"message": "Reset password email request received successfully."}
-        )
+        return response.Response({"message": "Reset password email request received successfully."})
 
     @decorators.action(
         methods=["post"],

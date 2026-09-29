@@ -1,0 +1,12 @@
+{
+  "name": "backstage-admin",
+  "private": true,
+  "scripts": {
+    "build:css": "npx @tailwindcss/cli -i styles.css -o static/backstage/css/styles.css"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "@tailwindcss/typography": "^0.5.20",
+    "tailwindcss": "4.3.3"
+  }
+}

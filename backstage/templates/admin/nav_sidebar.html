@@ -1,0 +1,20 @@
+{% load i18n backstage %}
+
+<div class="relative z-60" x-bind:class="{'select-none': resizing}" x-on:mousemove.window="if (resizing && !sidebarCollapsed) { sidebarWidth = Math.min(max, Math.max(min, $event.clientX)); localStorage.setItem('sidebarWidth', sidebarWidth); }" x-on:mouseup.window="resizing = false" x-data="{ min: 220, max: 360, resizing: false }">
+ <div class="fixed xl:relative {% element_classes 'navigation_wrapper' %}" x-show="sidebarOpen" x-bind:style="`width: ${effectiveSidebarWidth}px`">
+ <div class="bg-background relative z-30 dark:bg-base-900">
+ <div id="nav-sidebar" class="bg-card border-r border-border bottom-0 fixed max-h-screen top-0 dark:bg-base-900 {% element_classes 'navigation' %}" x-bind:class="{'backstage-sidebar-collapsed': sidebarCollapsed}" x-bind:style="`width: ${effectiveSidebarWidth}px`">
+ {% if templates.navigation %}
+ {% include templates.navigation %}
+ {% else %}
+ {% include "backstage/helpers/navigation.html" %}
+ {% endif %}
+
+ <div class="sidebar-resize-handle absolute bottom-0 cursor-col-resize flex group items-center justify-center right-[-3px] top-0 w-[7px]" x-show="!sidebarCollapsed" x-on:mousedown="if (!sidebarCollapsed) { resizing = true }">
+ <div class="h-full w-[3px] transition-colors group-hover:bg-base-300 group-hover:dark:bg-base-700">
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>

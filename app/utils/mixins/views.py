@@ -1,25 +1,23 @@
-from datetime import datetime
 import io
 import json
-from typing import Literal
+from datetime import datetime
+from typing import Literal, Protocol
+
+import polars as pl
 from django.db.models import Q, QuerySet
+from django.http import HttpResponse
+from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
-from rest_framework import response, viewsets, generics, decorators
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import decorators, generics, response, viewsets
+from styleframe import StyleFrame
+
 from app.utils import get_last_date_of_week
 from app.utils.filters import BaseModelFilterSet
 from app.utils.pagination import StandardPagination
-from drf_spectacular.utils import OpenApiParameter
-
 from app.utils.validators import AnalyticsData
-from typing import Protocol, Any
-from user.models import User
 from user.constants import UserRoleChoices
-import polars as pl
-from django.http import HttpResponse
-from django.utils import timezone
-from rest_framework import decorators
-from styleframe import StyleFrame
+from user.models import User
 
 
 class AudienceFilterFn(Protocol):
@@ -126,9 +124,9 @@ class AnalyticsGraphViewMixin(generics.ListAPIView):
         raise NotImplementedError
 
     def map_weekly_data(self, item):
-        item["label_x"] = get_last_date_of_week(
-            year=item.get("year"), week=item.get("interval_data")
-        ).strftime("%Y-%m-%d")
+        item["label_x"] = get_last_date_of_week(year=item.get("year"), week=item.get("interval_data")).strftime(
+            "%Y-%m-%d"
+        )
         item["label_y"] = f"${item.get('data')}"
         return item
 
@@ -146,9 +144,7 @@ class AnalyticsGraphViewMixin(generics.ListAPIView):
         item["label_y"] = f"${item.get('data')}"
         return item
 
-    def get_graph_data(
-        self, qs: QuerySet, interval_type: Literal["weekly", "monthly", "yearly"]
-    ):
+    def get_graph_data(self, qs: QuerySet, interval_type: Literal["weekly", "monthly", "yearly"]):
         data = []
         if interval_type == "weekly":
             data = map(lambda x: self.map_weekly_data(x), qs)
@@ -223,9 +219,7 @@ class ExportMixin:
         df = pl.DataFrame(data)
 
         if ordered_column:
-            cols = [c for c in ordered_column if c in df.columns] + [
-                c for c in df.columns if c not in ordered_column
-            ]
+            cols = [c for c in ordered_column if c in df.columns] + [c for c in df.columns if c not in ordered_column]
             df = df.select(cols)
 
         for col, dtype in change_types.items():
@@ -239,9 +233,7 @@ class ExportMixin:
             for f in format_types:
                 if callable(f):
                     for col in df.columns:
-                        df = df.with_columns(
-                            df[col].map_elements(lambda v: f(col, v)).alias(col)
-                        )
+                        df = df.with_columns(df[col].map_elements(lambda v: f(col, v)).alias(col))
 
         df = df.rename(rename_columns)
         df = df.drop([c for c in exclude_columns if c in df.columns])
@@ -249,9 +241,7 @@ class ExportMixin:
         # convert datetimetime cols to str
         for col, dtype in zip(df.columns, df.dtypes):
             if dtype == pl.Datetime or dtype == pl.Date:
-                df = df.with_columns(
-                    df[col].dt.strftime("%Y-%m-%dT%H:%M:%S").alias(col)
-                )
+                df = df.with_columns(df[col].dt.strftime("%Y-%m-%dT%H:%M:%S").alias(col))
 
         bytes_io = io.BytesIO()
         sf = StyleFrame(df.to_dicts())

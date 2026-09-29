@@ -1,7 +1,8 @@
+from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework import serializers
-from django.conf import settings
+
 from user.utils import (
     get_password_reset_token_for_email_or_username,
     reset_password_for_token,
@@ -20,9 +21,7 @@ class SendResetPasswordEmailSerializer(serializers.Serializer):
         template_name = validated_data.get("template_name", "password_reset")
         reset_email_template = f"user/email/{template_name}.html"
 
-        user, uidb64, token = get_password_reset_token_for_email_or_username(
-            validated_data["email_or_username"]
-        )
+        user, uidb64, token = get_password_reset_token_for_email_or_username(validated_data["email_or_username"])
         context = {
             "user": user,
             "uidb64": uidb64,

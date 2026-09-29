@@ -1,0 +1,155 @@
+{% load i18n admin_urls backstage %}
+
+{% include "backstage/helpers/sticky_footer_open.html" with footer_outer_attrs='x-data="{ publishOpen: false, editLiveSaveOpen: false, pendingSaveName: \'_save\' }"' %}
+ <div class="flex flex-col-reverse gap-3 items-center relative mx-auto lg:flex-row-reverse container w-full flex-1">
+
+ <div class="flex flex-wrap items-center justify-end gap-3 w-full lg:w-auto">
+ {% for action in actions_submit_line %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name=action.attrs.name|default:action.action_name variant="default" size="sm" class="w-full lg:w-auto" attrs=action.attrs %}
+ {% if action.icon %}
+ <span class="material-symbols-outlined">{{ action.icon }}</span>
+ {% endif %}
+ {{ action.description }}
+ {% endcomponent %}
+ {% endfor %}
+
+ {% if live_published_pending_draft %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_start_draft" variant="default" size="sm" icon="visibility" class="w-full lg:w-auto" %}
+ {% trans "Save draft & show preview" %}
+ {% endcomponent %}
+ {% if show_save_and_continue %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_continue" variant="default" size="sm" icon="edit_note" class="w-full lg:w-auto" %}
+ {% trans "Save and continue editing" %}
+ {% endcomponent %}
+ {% endif %}
+ {% if show_save %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_save" variant="primary" size="sm" icon="save" class="w-full lg:w-auto" %}
+ {% trans "Save" %}
+ {% endcomponent %}
+ {% endif %}
+
+ {% elif edit_live_mode %}
+ {% if show_save_and_continue %}
+ {% if pending_draft_pk %}
+ {% component "backstage/components/button.html" with type="button" variant="default" size="sm" icon="edit_note" class="w-full lg:w-auto" extra_attrs="x-on:click=\"pendingSaveName = '_continue'; editLiveSaveOpen = true\"" %}
+ {% trans "Save and continue editing" %}
+ {% endcomponent %}
+ {% else %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_continue" variant="default" size="sm" icon="edit_note" class="w-full lg:w-auto" %}
+ {% trans "Save and continue editing" %}
+ {% endcomponent %}
+ {% endif %}
+ {% endif %}
+ {% if show_save %}
+ {% if pending_draft_pk %}
+ {% component "backstage/components/button.html" with type="button" variant="primary" size="sm" icon="save" class="w-full lg:w-auto" extra_attrs="x-on:click=\"pendingSaveName = '_save'; editLiveSaveOpen = true\"" %}
+ {% trans "Save" %}
+ {% endcomponent %}
+ {% else %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_save" variant="primary" size="sm" icon="save" class="w-full lg:w-auto" %}
+ {% trans "Save" %}
+ {% endcomponent %}
+ {% endif %}
+ {% endif %}
+
+ {% elif draft_workflow_footer %}
+ {% if show_save_and_continue %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_continue" variant="primary" size="sm" icon="save" class="w-full lg:w-auto" %}
+ {% trans "Save draft & update preview" %}
+ {% endcomponent %}
+ {% endif %}
+ {% if show_publish_button and original %}
+ <span class="hidden lg:inline border-l border-border pl-2 ml-1"></span>
+ {% component "backstage/components/button.html" with type="button" variant="default" size="sm" icon="publish" class="w-full lg:w-auto" extra_attrs="x-on:click='publishOpen = true'" %}
+ {% trans "Publish" %}
+ {% endcomponent %}
+ {% endif %}
+
+ {% else %}
+ {% if show_save_and_continue %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_continue" variant="default" size="sm" icon="edit_note" class="w-full lg:w-auto" %}
+ {% trans "Save and continue editing" %}
+ {% endcomponent %}
+ {% endif %}
+ {% if show_save %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_save" variant="primary" size="sm" icon="save" class="w-full lg:w-auto" %}
+ {% trans "Save" %}
+ {% endcomponent %}
+ {% endif %}
+ {% endif %}
+ </div>
+
+ <div class="flex flex-row flex-wrap gap-3 mr-auto w-full lg:w-auto items-center">
+ {% if show_close or adminform.model_admin.change_form_show_cancel_button %}
+ {% url opts|admin_urlname:'changelist' as changelist_url %}
+ {% add_preserved_filters changelist_url as link %}
+ {% component "backstage/components/button.html" with href=link variant="ghost" size="sm" icon="close" class="w-full lg:w-auto" %}
+ {% trans "Close" %}
+ {% endcomponent %}
+ {% endif %}
+
+ {% if original %}
+ {% if original.is_draft_copy %}
+ {% url opts|admin_urlname:'discard_draft' original.pk|admin_urlquote as discard_footer_url %}
+ <form method="post" action="{{ discard_footer_url }}" class="inline" onsubmit="return confirm('{% trans "Discard this draft? Unpublished edits will be lost. The live post is not deleted." %}');">
+ {% csrf_token %}
+ {% component "backstage/components/button.html" with submit=1 variant="danger-outline" size="sm" icon="delete_sweep" class="w-full lg:w-auto" %}
+ {% trans "Discard draft" %}
+ {% endcomponent %}
+ </form>
+ {% elif show_delete_link and not original.is_draft_copy %}
+ {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
+ {% add_preserved_filters delete_url as delete_link %}
+ {% component "backstage/components/button.html" with href=delete_link variant="danger-outline" size="sm" icon="delete" class="w-full lg:w-auto" %}
+ {% trans "Delete" %} {{ opts.verbose_name }}
+ {% endcomponent %}
+ {% endif %}
+ {% endif %}
+ </div>
+ </div>
+
+ {% if draft_workflow_footer and show_publish_button and original %}
+ <template x-teleport="body">
+ <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4" x-cloak x-show="publishOpen" x-transition>
+ <div class="absolute inset-0 bg-base-900/40 backdrop-blur-xs dark:bg-base-900/80" x-on:click="publishOpen = false"></div>
+ <div class="relative z-10 mx-auto w-full max-w-sm rounded-default border border-border bg-card p-6 shadow-lg dark:bg-base-800" role="dialog" aria-modal="true" x-on:click.outside="publishOpen = false">
+ <h2 class="font-semibold text-base text-foreground">{% trans "Publish to live site?" %}</h2>
+ <p class="mt-2 text-sm text-muted-foreground">{% trans "Your current edits will be saved and published to the live site. Draft copies are removed after publishing." %}</p>
+ <div class="mt-6 flex flex-row justify-end gap-3">
+ {% component "backstage/components/button.html" with type="button" variant="default" size="sm" extra_attrs="x-on:click='publishOpen = false'" %}
+ {% trans "Cancel" %}
+ {% endcomponent %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" name="_publish" variant="primary" size="sm" %}
+ {% trans "Publish" %}
+ {% endcomponent %}
+ </div>
+ </div>
+ </div>
+ </template>
+ {% endif %}
+
+ {% if edit_live_mode and pending_draft_pk %}
+ <template x-teleport="body">
+ <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4" x-cloak x-show="editLiveSaveOpen" x-transition>
+ <div class="absolute inset-0 bg-base-900/40 backdrop-blur-xs dark:bg-base-900/80" x-on:click="editLiveSaveOpen = false"></div>
+ <div class="relative z-10 mx-auto w-full max-w-sm rounded-default border border-border bg-card p-6 shadow-lg dark:bg-base-800" role="dialog" aria-modal="true" x-on:click.outside="editLiveSaveOpen = false">
+ <h2 class="font-semibold text-base text-foreground">{% trans "Update live site?" %}</h2>
+ <p class="mt-2 text-sm text-muted-foreground">{% trans "Your edits will be saved to the public site immediately. The unpublished draft will be removed." %}</p>
+ {% url opts|admin_urlname:'change' pending_draft_pk|admin_urlquote as pending_draft_url %}
+ <p class="mt-2 text-sm">
+ <a href="{{ pending_draft_url }}" class="text-primary-600 underline dark:text-primary-400">{% trans "Return to draft editing instead" %}</a>
+ </p>
+ <input type="hidden" name="_confirm_discard_pending_draft" value="1" form="{{ opts.model_name }}_form">
+ <div class="mt-6 flex flex-row justify-end gap-3">
+ {% component "backstage/components/button.html" with type="button" variant="default" size="sm" extra_attrs="x-on:click='editLiveSaveOpen = false'" %}
+ {% trans "Cancel" %}
+ {% endcomponent %}
+ {% component "backstage/components/button.html" with submit=1 form=opts.model_name|add:"_form" variant="primary" size="sm" extra_attrs="x-bind:name=\"pendingSaveName\"" %}
+ {% trans "Update live site" %}
+ {% endcomponent %}
+ </div>
+ </div>
+ </div>
+ </template>
+ {% endif %}
+{% include "backstage/helpers/sticky_footer_close.html" %}

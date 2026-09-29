@@ -1,0 +1,68 @@
+{% load admin_urls i18n backstage backstage_list %}
+
+{% if result_hidden_fields %}
+ <div class="hiddenfields">
+ {% for item in result_hidden_fields %}{{ item }}{% endfor %}
+ </div>
+{% endif %}
+
+{% if results %}
+ <div class="{% table_wrapper_classes %}">
+ <table id="result_list" class="result-list {% table_classes %}" {% if cl.model_admin.ordering_field %}x-sort.ghost x-on:end="sortRecords" data-ordering-field="{{ cl.model_admin.ordering_field }}"{% endif %}>
+ {% include 'backstage/helpers/change_list_headers.html' with show_changelist_row_actions=show_changelist_row_actions %}
+
+ {% for result in results %}
+ <tbody class="relative" x-data="{rowOpen: false}" {% if cl.model_admin.ordering_field %}x-sort:item{% endif %}>
+ {% if result.form and result.form.non_field_errors %}
+ <tr>
+ <td class="text-left" colspan="{{ result|length }}">
+ {{ result.form.non_field_errors }}
+ </td>
+ </tr>
+ {% endif %}
+
+ <tr class="{% table_row_classes %} relative">
+ {% if cl.model_admin.ordering_field %}
+ <td class="align-middle font-normal px-4 relative text-left w-px" x-sort:handle>
+ <div class="cursor-move hover:bg-muted backstage-row-action select-none transition-colors">
+ <span class="material-symbols-outlined align-middle cursor-move text-muted-foreground">drag_indicator</span>
+ </div>
+ </td>
+ {% endif %}
+
+ {% if cl.model_admin.list_sections|length > 0 %}
+ <td class="align-middle cursor-pointer font-normal px-4 relative text-left w-px" x-on:click="rowOpen = !rowOpen">
+ <div class="absolute bg-primary-600 bottom-0 left-0 -top-px w-0.5" x-show="rowOpen"></div>
+ <span class="material-symbols-outlined select-none block! h-[18px] w-[18px] -rotate-90 transition-all text-muted-foreground" x-bind:class="rowOpen && 'rotate-0'">
+ expand_more
+ </span>
+ </td>
+ {% endif %}
+
+ {% for item in result %}
+ {{ item }}
+ {% endfor %}
+
+ {% include 'backstage/helpers/changelist_row_actions.html' with show_changelist_row_actions=show_changelist_row_actions show_changelist_row_edit=show_changelist_row_edit show_changelist_row_delete=show_changelist_row_delete actions=actions_row result=result %}
+ </tr>
+
+ {% if cl.model_admin.list_sections|length > 0 %}
+ <tr class="mb-3 relative z-30" x-show="rowOpen">
+ <td colspan="100%" class="bg-muted/30 border-t border-border relative p-3 dark:bg-base-800/30">
+ <div class="absolute bg-primary-600 -bottom-px left-0 -top-px w-0.5"></div>
+
+ <div class="grid gap-3 {{ cl.model_admin.list_sections_classes }}">
+ {% for section in cl.model_admin.list_sections %}
+ {% render_section cl.model_admin.list_sections|index:forloop.counter0 result.instance %}
+ {% endfor %}
+ </div>
+ </td>
+ </tr>
+ {% endif %}
+ </tbody>
+ {% endfor %}
+ </table>
+ </div>
+{% else %}
+ {% include 'backstage/helpers/empty_results.html' %}
+{% endif %}

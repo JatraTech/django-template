@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
+umask 022
+
 uid="$(id -u)"
-mkdir -p /app/staticfiles /app/media
+
+install -d /app/staticfiles /app/media
 
 if [ "$uid" -eq 0 ]; then
     chown -R appuser:appgroup /app/staticfiles /app/media 2>/dev/null || true

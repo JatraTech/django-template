@@ -1,0 +1,67 @@
+{% load i18n backstage_list %}
+
+<thead>
+ <tr class="{% table_head_row_classes %}">
+ {% if cl.model_admin.ordering_field %}
+ <th class="{% table_header_cell_classes %} w-px"></th>
+ {% endif %}
+
+ {% if cl.model_admin.list_sections|length > 0 %}
+ <th class="{% table_header_cell_classes %} w-px"></th>
+ {% endif %}
+
+ {% for header in result_headers %}
+ <th class="{% table_header_cell_classes %} {{ header.class_attrib }} {% if "action-toggle" in header.text and forloop.counter == 1 %}w-px{% endif %}" scope="col">
+ <div class="flex items-center gap-2">
+ <div class="text">
+ {% if header.sortable %}
+ <a href="{{ header.url_primary }}" class="backstage-changelist-link">
+ {{ header.text|capfirst }}
+ </a>
+ {% else %}
+ {% if "action-toggle" in header.text and forloop.counter == 1 %}
+ <label class="flex flex-row items-center gap-2">
+ {{ header.text|capfirst }}
+ </label>
+ {% else %}
+ <span>
+ {{ header.text|capfirst }}
+ </span>
+ {% endif %}
+ {% endif %}
+ </div>
+
+ {% if header.sortable %}
+ {% if header.sort_priority > 0 %}
+ <div class="sortoptions flex items-center">
+ <a href="{{ header.url_toggle }}" class="flex items-center leading-none text-muted-foreground hover:text-foreground toggle {% if header.ascending %}ascending{% else %}descending{% endif %}" title="{% translate "Toggle sorting" %}">
+ {% if header.ascending %}
+ <span class="block material-symbols-outlined text-base">arrow_upward</span>
+ {% else %}
+ <span class="block material-symbols-outlined text-base">arrow_downward</span>
+ {% endif %}
+ </a>
+
+ <a class="sortremove flex items-center leading-none ml-1 text-muted-foreground transition-all hover:text-red-700 dark:hover:text-red-500" href="{{ header.url_remove }}" title="{% translate "Remove from sorting" %}">
+ <span class="block material-symbols-outlined text-base">close</span>
+ </a>
+ </div>
+
+ {% if num_sorted_fields > 1 %}
+ <span class="sortpriority font-medium ml-1 text-xs" title="{% blocktranslate with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktranslate %}">
+ {{ header.sort_priority }}
+ </span>
+ {% endif %}
+ {% endif %}
+ {% endif %}
+ </div>
+ </th>
+ {% endfor %}
+
+ {% if show_changelist_row_actions %}
+ <th class="{% table_header_cell_classes %} w-px text-right" scope="col">
+ <span>{% translate "Actions" %}</span>
+ </th>
+ {% endif %}
+ </tr>
+</thead>

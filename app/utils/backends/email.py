@@ -12,7 +12,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import BatchHttpRequest
-from utils.tasks import send_gmail_emails
+
+# from utils.tasks import send_gmail_emails
 
 
 class GmailBackend(BaseEmailBackend):
@@ -27,9 +28,7 @@ class GmailBackend(BaseEmailBackend):
         try:
             # Load existing credentials if available
             if os.path.exists(cls.TOKEN_PATH):
-                creds = Credentials.from_authorized_user_file(
-                    cls.TOKEN_PATH, cls.SCOPES
-                )
+                creds = Credentials.from_authorized_user_file(cls.TOKEN_PATH, cls.SCOPES)
 
             # If credentials are invalid or expired, refresh or reauthenticate
             if not creds or not creds.valid:
@@ -38,9 +37,7 @@ class GmailBackend(BaseEmailBackend):
                     logging.info("Token refreshed successfully.")
                 else:
                     # First-time authentication (Manual login required once)
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        cls.CREDENTIALS_PATH, cls.SCOPES
-                    )
+                    flow = InstalledAppFlow.from_client_secrets_file(cls.CREDENTIALS_PATH, cls.SCOPES)
                     creds = flow.run_local_server(port=0)  # Opens login prompt
 
                 # Save updated credentials
@@ -70,16 +67,12 @@ class GmailBackend(BaseEmailBackend):
             raw_bytes = email_message.message().as_bytes()
             raw_base64 = base64.urlsafe_b64encode(raw_bytes).decode()
             message = {"raw": raw_base64}
-            batch.add(
-                cls.get_gmail_service()
-                .users()
-                .messages()
-                .send(userId="me", body=message)
-            )
+            batch.add(cls.get_gmail_service().users().messages().send(userId="me", body=message))
         batch.execute()
 
     def send_messages(self, email_messages: Iterable[EmailMessage]):
-        send_gmail_emails.s(email_messages).apply_async()
+        # send_gmail_emails.s(email_messages).apply_async()
+        self.send_batch_emails(list(email_messages))
 
     def open(self) -> bool | None:
         if not self.service:

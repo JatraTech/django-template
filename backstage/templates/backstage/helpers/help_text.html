@@ -1,0 +1,5 @@
+{% if help_text %}
+ <div class="leading-relaxed text-xs text-muted-foreground{% if inline %} min-w-0{% else %} mt-2{% endif %}">
+ {{ help_text|safe }}
+ </div>
+{% endif %}

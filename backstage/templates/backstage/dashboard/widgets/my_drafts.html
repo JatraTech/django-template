@@ -1,0 +1,47 @@
+{% load i18n %}
+
+<div class="backstage-dashboard-module backstage-surface-card">
+ <div class="backstage-dashboard-module__header">
+  <span class="material-symbols-outlined backstage-dashboard-module__header-icon" aria-hidden="true">edit_note</span>
+  {% trans "My drafts" %}
+ </div>
+ <div class="backstage-dashboard-module__body backstage-dashboard-module__body--flush">
+  {% if drafts.rows %}
+  <div class="backstage-dashboard-drafts-table-wrap">
+   <table class="backstage-dashboard-drafts-table">
+    <thead>
+     <tr>
+      <th scope="col">{% trans "Title" %}</th>
+      <th scope="col">{% trans "Type" %}</th>
+      <th scope="col">{% trans "Actions" %}</th>
+     </tr>
+    </thead>
+    <tbody>
+     {% for row in drafts.rows %}
+     <tr>
+      <td>{{ row.title }}</td>
+      <td>{{ row.model_label }}</td>
+      <td class="backstage-dashboard-drafts-table__actions">
+       <div class="backstage-dashboard-drafts-actions">
+        <a href="{{ row.edit_url }}" class="backstage-dashboard-welcome-link backstage-dashboard-welcome-link--compact">
+         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+         <span>{% trans "Edit" %}</span>
+        </a>
+        {% if row.preview_url %}
+        <a href="{{ row.preview_url }}" class="backstage-dashboard-welcome-link backstage-dashboard-welcome-link--compact" target="_blank" rel="noopener noreferrer">
+         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+         <span>{% trans "Preview" %}</span>
+        </a>
+        {% endif %}
+       </div>
+      </td>
+     </tr>
+     {% endfor %}
+    </tbody>
+   </table>
+  </div>
+  {% else %}
+  <p class="backstage-dashboard-module__empty">{% trans "No drafts — you're caught up." %}</p>
+  {% endif %}
+ </div>
+</div>

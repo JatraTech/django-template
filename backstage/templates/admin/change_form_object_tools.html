@@ -1,0 +1,21 @@
+{% load i18n admin_urls backstage %}
+
+{% block object-tools-items %}
+ {% if show_history %}
+ {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+ {% add_preserved_filters history_url as link %}
+ <li class="border border-border flex items-stretch select-none max-lg:-mt-px min-lg:-ml-px min-lg:first:rounded-l-default min-lg:last:rounded-r-default">
+ {% component "backstage/components/button.html" with href=link variant="default" size="sm" icon="history" class="rounded-none border-0" %}
+ {% trans 'History' %}
+ {% endcomponent %}
+ </li>
+ {% endif %}
+
+ {% if has_absolute_url and show_view_on_site %}
+ <li class="border border-border flex items-stretch select-none max-lg:-mt-px min-lg:-ml-px min-lg:first:rounded-l-default min-lg:last:rounded-r-default">
+ {% component "backstage/components/button.html" with href=absolute_url variant="default" size="sm" icon="open_in_new" class="rounded-none border-0" extra_attrs='target="_blank" rel="noopener noreferrer"' %}
+ {% trans 'View on site' %}
+ {% endcomponent %}
+ </li>
+ {% endif %}
+{% endblock %}

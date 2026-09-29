@@ -1,0 +1,84 @@
+{% load i18n backstage backstage_list %}
+
+{% block validation_errors %}
+ {% capture as import_error silent %}
+ {% trans "Some rows failed to validate" %}. {% trans "Please correct these errors in your data where possible, then reupload it using the form above." %}
+ {% endcapture %}
+
+ <div class="mt-8">
+ {% include "backstage/helpers/messages/error.html" with error=import_error %}
+ </div>
+
+ <div class="border border-border mb-3 overflow-auto scrollbar-default w-full rounded-default dark:border-border">
+ <table class="import-preview {% table_classes %} lg:border lg:rounded-default lg:border-border lg:dark:border-border">
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ <th class="{% table_header_cell_classes %}">
+ {% trans "Row" %}
+ </th>
+
+ {% for field in result.diff_headers %}
+ <th class="{% table_header_cell_classes %}">
+ {{ field }}
+ </th>
+ {% endfor %}
+ </tr>
+ </thead>
+
+
+ {% for row in result.invalid_rows %}
+ <tbody>
+ {% if row.non_field_specific_errors or row.field_specific_errors %}
+ <tr>
+ <td colspan="100%" class="border-t border-border p-3 dark:border-border">
+ <div class="flex flex-col gap-2 *:mb-0">
+ {% for field_name, error_list in row.field_specific_errors.items %}
+ {% capture as error_message silent %}
+ <div class="flex flex-row gap-1">
+ <span class="font-semibold">{{ field_name }}:</span>
+
+ <ul>
+ {% for error in error_list %}
+ <li>{{ error }}</li>
+ {% endfor %}
+ </ul>
+ </div>
+ {% endcapture %}
+
+ {% include "backstage/helpers/messages/error.html" with error=error_message %}
+ {% endfor %}
+
+ {% for error in row.non_field_specific_errors %}
+ {% capture as error_message silent %}
+ <div class="flex flex-row gap-1">
+ <span class="font-semibold">{% trans "Non field specific" %}:</span>
+
+ <span>
+ {{ error }}
+ </span>
+ </div>
+ {% endcapture %}
+
+ {% include "backstage/helpers/messages/error.html" with error=error_message %}
+ {% endfor %}
+ </div>
+ </td>
+ </tr>
+ {% endif %}
+
+ <tr class="{% table_row_classes %}">
+ <td>
+ {{ row.number }}
+ </td>
+
+ {% for field in row.values %}
+ <td>
+ {{ field }}
+ </td>
+ {% endfor %}
+ </tr>
+ </tbody>
+ {% endfor %}
+ </table>
+ </div>
+{% endblock %}

@@ -28,10 +28,7 @@ class CustomOrderingFilter(OrderingFilter):
     """
 
     def remove_invalid_fields(self, queryset, fields, view, request):
-        valid_fields = [
-            item[0]
-            for item in self.get_valid_fields(queryset, view, {"request": request})
-        ]
+        valid_fields = [item[0] for item in self.get_valid_fields(queryset, view, {"request": request})]
         alias_map = getattr(view, "ordering_field_map", {}) or {}
         cleaned_fields = []
 

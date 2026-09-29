@@ -1,0 +1,9 @@
+<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}
+ class="flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border border-border p-2 transition-colors hover:bg-muted has-[:checked]:border-primary-500 has-[:checked]:bg-muted">
+ {% include "django/forms/widgets/input.html" %}
+ <span class="size-8 shrink-0 rounded-full border border-border"
+ style="background-color: {{ widget.swatch_color }};"></span>
+ <span class="max-w-20 truncate text-center text-xs font-medium text-foreground">
+ {{ widget.label }}
+ </span>
+</label>

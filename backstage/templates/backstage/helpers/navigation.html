@@ -1,0 +1,15 @@
+{% load i18n backstage %}
+
+<nav id="nav-sidebar-inner" class="bg-card flex flex-col min-h-screen dark:text-font-default-dark dark:bg-base-900 {% element_classes 'navigation_inner' %}">
+ {% include "backstage/helpers/navigation_header.html" %}
+
+ {% include "backstage/helpers/search.html" %}
+
+ {% if sidebar_navigation|length > 0 %}
+ {% include "backstage/helpers/app_list.html" with app_list=available_apps %}
+ {% else %}
+ {% include "admin/app_list.html" with app_list=available_apps show_changelinks=False %}
+ {% endif %}
+
+ {% include "backstage/helpers/navigation_user.html" %}
+</nav>

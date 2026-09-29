@@ -1,0 +1,60 @@
+{% load i18n backstage backstage_list %}
+
+{% if sidebar_navigation %}
+ <div id="nav-sidebar-apps" class="h-0 grow overflow-auto scrollbar-default-hover">
+ {% for group in sidebar_navigation %}
+ {% if group.items %}
+ {% has_nav_item_active group.items as has_active %}
+
+ <div class="hidden mb-1.5 has-[ol]:has-[li]:block" {% if group.collapsible %}{% if sidebar_group_collapse == "open" %}x-data="{navigationOpen: true}"{% elif sidebar_group_collapse == "collapsed" %}x-data="{navigationOpen: false}"{% else %}x-data="{navigationOpen: Alpine.$persist({% if has_active %}true{% else %}false{% endif %}).as('backstage-nav-{{ group.id }}')}"{% endif %}{% endif %}>
+ {% if group.separator %}
+ <hr class="border-t border-border mx-3 my-2 dark:border-border" />
+ {% endif %}
+
+ {% if group.title %}
+ <h2 class="{% nav_group_title_classes %} flex flex-row group items-center {% if group.collapsible and sidebar_group_collapse == "dynamic" %}cursor-pointer hover:text-foreground{% endif %}" {% if group.collapsible and sidebar_group_collapse == "dynamic" %}x-on:click="navigationOpen = !navigationOpen"{% endif %}>
+ {{ group.title }}
+
+ {% include "backstage/helpers/app_list_badge.html" with item=group %}
+
+ {% if group.collapsible %}
+ <span class="nav-group-chevron material-symbols-outlined ml-auto text-muted-foreground transition-transform" x-bind:class="{'rotate-90': navigationOpen}">
+ chevron_right
+ </span>
+ {% endif %}
+ </h2>
+ {% endif %}
+
+ <ol class="flex flex-col px-3" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
+ {% for item in group.items %}
+ {% if item.has_permission %}
+ <li>
+ <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="{% nav_link_classes %}{% if item.active %} {% nav_link_active_classes %}{% endif %}" title="{{ item.title|striptags }}" {% if item.link_attrs %}{% include "backstage/helpers/attrs.html" with attrs=item.link_attrs %}{% endif %}>
+ {% if item.icon_template %}
+ {% include item.icon_template with item=item %}
+ {% elif item.icon %}
+ <span class="{% nav_icon_classes %}">
+ {{ item.icon }}
+ </span>
+ {% endif %}
+
+ <span class="nav-link-label truncate">{{ item.title|safe }}</span>
+
+ {% include "backstage/helpers/app_list_badge.html" with item=item %}
+ </a>
+ </li>
+ {% endif %}
+ {% endfor %}
+ </ol>
+ </div>
+ {% endif %}
+ {% endfor %}
+ </div>
+
+ {% include "backstage/helpers/app_list_all.html" %}
+{% else %}
+ <p>
+ {% trans "You don’t have permission to view or edit anything." as error_message %}
+ {% include "backstage/helpers/messages/error.html" with error=error_message %}
+ </p>
+{% endif %}

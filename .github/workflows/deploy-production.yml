@@ -1,0 +1,53 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production-${{ github.repository }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Backend (Docker)
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 20
+
+    steps:
+      - name: Deploy backend to server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            echo "Starting deployment..."
+
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+
+            cd "${{ secrets.REMOTE_PATH }}"
+
+            echo "Updating source code..."
+            git fetch origin main --prune
+            git reset --hard origin/main
+
+            echo "Building containers..."
+            docker compose build --pull
+
+            echo "Starting containers..."
+            docker compose up -d --remove-orphans
+
+            echo "Cleaning unused images..."
+            docker image prune -f
+
+            echo "Deployment successful"

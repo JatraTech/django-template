@@ -1,19 +1,17 @@
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from rest_framework.exceptions import ValidationError
 
+from app.utils.fields import OptimizedImageField
 from app.utils.mixins.models import ModelMixin
 from user.constants import AccessHaltReasonChoices, UserRoleChoices
-from django.contrib.auth.models import UserManager
 
 
 class User(ModelMixin, AbstractUser):
-    image = models.ImageField(upload_to="user/users/", null=True, blank=True)
+    image = OptimizedImageField(upload_to="user/users/", null=True, blank=True)
     phone = models.CharField(max_length=20, unique=True, null=True)
     dob = models.DateField(null=True, blank=True)
-    user_role = models.CharField(
-        max_length=20, choices=UserRoleChoices.choices, default=UserRoleChoices.USER
-    )
+    user_role = models.CharField(max_length=20, choices=UserRoleChoices.choices, default=UserRoleChoices.USER)
     email_verified_at = models.DateTimeField(null=True, blank=True)
 
     access_halt_reason = models.CharField(

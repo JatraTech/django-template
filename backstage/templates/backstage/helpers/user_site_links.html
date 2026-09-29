@@ -1,0 +1,15 @@
+{% for item in site_dropdown %}
+ <a href="{{ item.link }}"
+ class="mx-1 flex flex-row items-center gap-3 px-3 py-2 rounded-default text-font-default-light hover:bg-base-100 hover:text-base-700 dark:text-font-default-dark dark:hover:bg-base-700 dark:hover:text-base-200"
+ {% include "backstage/helpers/attrs.html" with attrs=item.attrs %}>
+ {% if item.icon %}
+ <span class="material-symbols-outlined">
+ {{ item.icon }}
+ </span>
+ {% endif %}
+
+ <span class="grow truncate">
+ {{ item.title }}
+ </span>
+ </a>
+{% endfor %}

@@ -1,6 +1,8 @@
 from django.db.models import F
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Value
+from rest_framework import decorators, parsers, response
+
 from app.utils.mixins.views import BaseModelViewSet
 from user.filters import UserFilterSet
 from user.models import User
@@ -9,7 +11,6 @@ from user.serializers import (
     UserImageUploadSerializer,
     UserSerializer,
 )
-from rest_framework import decorators, parsers, response
 
 
 class UserViewSet(BaseModelViewSet):
@@ -31,17 +32,10 @@ class UserViewSet(BaseModelViewSet):
         "last_login",
         "date_joined",
     ]
-    ordering_field_map = {
-        "full_name":"user_full_name",
-        "user_role_display":"user_role"
-    }
+    ordering_field_map = {"full_name": "user_full_name", "user_role_display": "user_role"}
 
     def get_queryset(self):
-        return super().get_queryset().annotate(
-            user_full_name=Concat(
-                F("first_name"), Value(" "), F("last_name")
-            )
-        )
+        return super().get_queryset().annotate(user_full_name=Concat(F("first_name"), Value(" "), F("last_name")))
 
     @decorators.action(
         methods=["put"],
@@ -53,9 +47,7 @@ class UserViewSet(BaseModelViewSet):
         ],
     )
     def upload_image(self, request, pk):
-        serializer = self.get_serializer(
-            data={"image": request.data.get("image"), "user": self.get_object()}
-        )
+        serializer = self.get_serializer(data={"image": request.data.get("image"), "user": self.get_object()})
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return response.Response(

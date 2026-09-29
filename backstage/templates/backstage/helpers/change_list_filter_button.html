@@ -1,0 +1,29 @@
+{% load i18n backstage backstage_list %}
+
+{% if cl.has_filters and cl|backstage_vertical_filters|length > 0 %}
+ {% if not cl.model_admin.list_filter_sheet %}
+ {% with filter_btn_class="filter-open-button lg:ml-auto md:mt-0 2xl:hidden" %}
+ {% if cl.has_active_filters %}
+ {% component "backstage/components/button.html" with type="button" size="sm" icon="filter_list" variant="primary" class=filter_btn_class extra_attrs='x-on:click="filterOpen = true" x-on:keydown.escape.window="filterOpen = false"' %}
+ {% trans "Filters" %}
+ {% endcomponent %}
+ {% else %}
+ {% component "backstage/components/button.html" with type="button" size="sm" icon="filter_list" variant="default" class=filter_btn_class extra_attrs='x-on:click="filterOpen = true" x-on:keydown.escape.window="filterOpen = false"' %}
+ {% trans "Filters" %}
+ {% endcomponent %}
+ {% endif %}
+ {% endwith %}
+ {% else %}
+ {% with filter_btn_class="filter-open-button lg:ml-auto md:mt-0" %}
+ {% if cl.has_active_filters %}
+ {% component "backstage/components/button.html" with type="button" size="sm" icon="filter_list" variant="primary" class=filter_btn_class extra_attrs='x-on:click="filterOpen = true" x-on:keydown.escape.window="filterOpen = false"' %}
+ {% trans "Filters" %}
+ {% endcomponent %}
+ {% else %}
+ {% component "backstage/components/button.html" with type="button" size="sm" icon="filter_list" variant="default" class=filter_btn_class extra_attrs='x-on:click="filterOpen = true" x-on:keydown.escape.window="filterOpen = false"' %}
+ {% trans "Filters" %}
+ {% endcomponent %}
+ {% endif %}
+ {% endwith %}
+ {% endif %}
+{% endif %}

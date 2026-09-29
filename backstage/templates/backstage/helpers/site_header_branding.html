@@ -1,0 +1,36 @@
+{% load i18n %}
+
+<a href="{% url "admin:index" %}"
+ class="flex h-full w-full min-w-0 items-center gap-3 rounded-md px-2 transition-colors hover:bg-muted/50">
+ <div class="shrink-0">
+ {% if site_logo %}
+ {% include "backstage/helpers/site_logo.html" %}
+ {% elif site_icon %}
+ {% if site_icon.light and site_icon.dark %}
+ <img src="{{ site_icon.dark }}" alt="{% trans 'Home' %}" class="h-8 hidden dark:block"/>
+
+ <img src="{{ site_icon.light }}" alt="{% trans 'Home' %}" class="block h-8 dark:hidden" />
+ {% else %}
+ <img src="{{ site_icon }}" class="h-8" alt="{% trans 'Home' %}" />
+ {% endif %}
+ {% else %}
+ <span class="bg-primary-600 flex h-8 w-8 items-center justify-center rounded-default shrink-0 text-white">
+ <span class="material-symbols-outlined text-base">
+ {% if site_symbol %}{{ site_symbol }}{% else %}settings{% endif %}
+ </span>
+ </span>
+ {% endif %}
+ </div>
+
+ <div class="nav-brand-text flex min-w-0 grow flex-col justify-center">
+ <div class="font-semibold text-important tracking-tight truncate {% if site_subheader %}text-sm{% else %}text-base{% endif %}">
+ {{ site_header|default:_("Django administration") }}
+ </div>
+
+ {% if site_subheader %}
+ <div class="truncate text-xs font-normal text-subtle">
+ {{ site_subheader }}
+ </div>
+ {% endif %}
+ </div>
+</a>

@@ -1,5 +1,11 @@
 name: ${COMPOSE_PROJECT_NAME:-myproject}
 
+x-logging: &default_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 x-app-environment: &app_environment
   DB_NAME: ${DB_NAME:-myproject}
   DB_USER: ${DB_USER:-postgres}
@@ -23,6 +29,7 @@ x-app-service: &app_service
     - .env
   environment:
     <<: *app_environment
+  logging: *default_logging
   networks:
     - app_network
 
@@ -31,6 +38,8 @@ services:
     image: postgres:17-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_db
     restart: unless-stopped
+    mem_limit: ${DB_MEM_LIMIT:-2g}
+    logging: *default_logging
     environment:
       POSTGRES_DB: ${DB_NAME:-myproject}
       POSTGRES_USER: ${DB_USER:-postgres}
@@ -64,6 +73,7 @@ services:
   web:
     <<: *app_service
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_web
+    mem_limit: ${WEB_MEM_LIMIT:-2g}
     environment:
       <<: *app_environment
       RUN_MIGRATIONS: "true"
@@ -83,7 +93,7 @@ services:
       - media:/app/media
       - ./staticfiles:/app/staticfiles
     ports:
-      - "${HOST_FORWARD_APP_PORT:-8050}:8000"
+      - "${HOST_FORWARD_APP_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy

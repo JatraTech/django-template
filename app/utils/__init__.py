@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 
 def str_to_bool(value) -> bool:
@@ -16,9 +16,7 @@ def get_last_date_of_week(year: int, week: int) -> datetime:
 
     """
     # ISO weeks start on Monday, and week 1 is the week with the first Thursday of the year
-    first_week_start = datetime.fromisocalendar(
-        year, week, 1
-    )  # Get Monday of the given week
+    first_week_start = datetime.fromisocalendar(year, week, 1)  # Get Monday of the given week
     last_date = first_week_start + timedelta(days=6)  # Sunday of that week
     return last_date
 

@@ -1,0 +1,21 @@
+{% load backstage %}
+
+<div class="bg-background/95 backdrop-blur border-b border-border mb-4 px-4 z-40 dark:bg-base-900/95 dark:text-font-default-dark {% element_classes 'header' %}">
+ <div class="{% if not cl.model_admin.list_fullwidth and is_fullwidth != "1" %}container{% endif %} flex items-center h-16 mx-auto py-4 {% element_classes 'header_inner' %}">
+ <div id="header-inner" class="flex items-center relative w-full">
+ <div class="flex items-center w-full">
+ {% block usertools %}
+ {% if has_permission %}
+ {% block welcome-msg %}
+ {% include 'backstage/helpers/welcomemsg.html' %}
+ {% endblock %}
+
+ {% block userlinks %}
+ {% include 'backstage/helpers/userlinks.html' %}
+ {% endblock %}
+ {% endif %}
+ {% endblock %}
+ </div>
+ </div>
+ </div>
+</div>

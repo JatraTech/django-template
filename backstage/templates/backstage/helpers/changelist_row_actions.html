@@ -1,0 +1,62 @@
+{% load i18n admin_urls backstage backstage_list %}
+
+{% if show_changelist_row_actions %}
+ <td class="align-middle field-row_actions font-normal min-w-0 overflow-hidden px-4 text-sm w-px">
+ <div class="flex flex-row items-center justify-end gap-1.5">
+ {% if show_changelist_row_edit %}
+ {% backstage_changelist_edit_pk cl.model_admin result.instance as edit_pk %}
+ {% url cl.opts|admin_urlname:'change' edit_pk|admin_urlquote as change_url %}
+ {% translate "Edit" as edit_label %}
+ <a href="{{ change_url }}" class="backstage-row-action text-primary-600 transition-colors hover:bg-muted dark:text-primary-500" title="{{ edit_label }}" aria-label="{{ edit_label }}">
+ <span class="material-symbols-outlined text-base leading-none">edit_square</span>
+ </a>
+ {% endif %}
+
+ {% if show_changelist_row_delete %}
+ {% url cl.opts|admin_urlname:'delete' result.instance.pk|admin_urlquote as delete_url %}
+ {% translate "Delete" as delete_label %}
+ <a href="{{ delete_url }}" class="backstage-row-action text-red-600 transition-colors hover:bg-muted dark:text-red-500" title="{{ delete_label }}" aria-label="{{ delete_label }}">
+ <span class="material-symbols-outlined text-base leading-none">delete</span>
+ </a>
+ {% endif %}
+
+ {% if actions %}
+ {% with action_id=result.instance.pk|cut:"-" %}
+ <div class="group/action relative leading-none" x-data="{ openActionsId{{ action_id }}: false }">
+ <button type="button" x-ref="rowDropdown{{ action_id }}" class="backstage-row-action cursor-pointer text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+ x-on:click="openActionsId{{ action_id }} = !openActionsId{{ action_id }}"
+ x-bind:class="{'bg-muted text-foreground': openActionsId{{ action_id }} }"
+ title="{% translate 'More actions' %}" aria-label="{% translate 'More actions' %}">
+ <span class="material-symbols-outlined text-base leading-none">more_vert</span>
+ </button>
+
+ <template x-teleport="body">
+ <nav x-anchor.bottom-end.offset.4="$refs.rowDropdown{{ action_id }}" class="top-7 z-50 flex w-48 flex-col rounded-default border border-border bg-white py-1 text-sm dark:border-border dark:bg-base-800" x-cloak x-show="openActionsId{{ action_id }}" x-transition x-on:click.outside="openActionsId{{ action_id }} = false">
+ {% for action in actions %}
+ <a href="{% url action.raw_path result.instance.pk %}"
+ {% if action.dialog %}
+ hx-get="{% url action.raw_path result.instance.pk %}"
+ hx-target="#modal-content"
+ hx-select="#dialog"
+ x-on:htmx:after-on-load="openModal = true"
+ {% endif %}
+ class="mx-1 flex max-h-[30px] items-center gap-2 rounded-default px-3 py-2 hover:bg-base-100 dark:hover:bg-base-700 dark:hover:text-base-200"{% for attr_name, attr_value in action.attrs.items %} {{ attr_name }}="{{ attr_value }}"{% endfor %}>
+ {% if action.icon %}
+ <span class="material-symbols-outlined">
+ {{ action.icon }}
+ </span>
+ {% endif %}
+
+ <span class="grow truncate">
+ {{ action.title }}
+ </span>
+ </a>
+ {% endfor %}
+ </nav>
+ </template>
+ </div>
+ {% endwith %}
+ {% endif %}
+ </div>
+ </td>
+{% endif %}

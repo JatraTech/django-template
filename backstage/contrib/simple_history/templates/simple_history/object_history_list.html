@@ -1,0 +1,174 @@
+{% load i18n %}
+{% load admin_urls %}
+{% load getattribute from getattributes %}
+{% load backstage_list %}
+
+<div class="border border-border mb-3 overflow-auto scrollbar-default w-full rounded-default dark:border-border">
+ <table id="change-history" class="{% table_classes %}">
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Date/time' %}
+ </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Changed by' %}
+ </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Object' %}
+ </th>
+
+ {% for column in history_list_display %}
+ <th class="{% table_header_cell_classes %}">
+ {% trans column %}
+ </th>
+ {% endfor %}
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Comment' %}
+ </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Change reason' %}
+ </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Changes' %}
+ </th>
+ <th class="{% table_header_cell_classes %} w-px"></th>
+ </tr>
+ </thead>
+
+ {% for record in page_obj %}
+ <tbody x-data="{rowOpen: false}">
+ {% with has_history_delta_changes=record.history_delta_changes|length %}
+ <tr class="{% table_row_classes %} {% if has_history_delta_changes %}cursor-pointer{% endif %} relative" {% if has_history_delta_changes %}x-on:click="if (!$event.target.closest('a')) { rowOpen = !rowOpen }"{% endif %}>
+ <td class="whitespace-nowrap w-3xs">
+ <div class="absolute bg-primary-600 -bottom-px left-0 -top-px w-0.5" x-show="rowOpen"></div>
+
+ {{ record.history_date }}
+ </td>
+
+ <td class="whitespace-nowrap">
+ {% url admin_user_view record.history_user_id as admin_user_url %}
+
+ {% if admin_user_url %}
+ <a href="{{ admin_user_url }}" class="text-important">{{ record.history_user }}</a>
+ {% else %}
+ {{ record.history_user }}
+ {% endif %}
+ </td>
+
+ <td class="whitespace-nowrap">
+ <a href="{% url opts|admin_urlname:'simple_history' object.pk record.pk %}" class="text-important">
+ {{ record.history_object }}
+ </a>
+ </td>
+
+ {% for column in history_list_display %}
+ <td>
+ {{ record|getattribute:column }}
+ </td>
+ {% endfor %}
+
+ <td>
+ {{ record.get_history_type_display }}
+ </td>
+
+ <td>
+ {% if record.history_change_reason %}
+ {{ record.history_change_reason }}
+ {% else %}
+ -
+ {% endif %}
+ </td>
+
+ <td>
+ {% block history_delta_changes %}
+ {% if has_history_delta_changes %}
+ <ul>
+ {% for change in record.history_delta_changes %}
+ {% include "backstage/helpers/label.html" with text=change.field %}
+ {% endfor %}
+ </ul>
+ {% else %}
+ -
+ {% endif %}
+ {% endblock %}
+ </td>
+
+ <td class="w-px">
+ {% if has_history_delta_changes %}
+ <span class="material-symbols-outlined select-none block! h-[18px] w-[18px] -rotate-90 transition-all" x-bind:class="rowOpen && 'rotate-0'">
+ expand_more
+ </span>
+ {% endif %}
+ </td>
+ </tr>
+
+ {% if has_history_delta_changes %}
+ <tr x-show="rowOpen">
+ <td colspan="100%" class="bg-muted/30 border-b border-border relative p-0">
+ <div class="absolute bg-primary-600 -bottom-px left-0 -top-px w-0.5"></div>
+
+ <table class="{% table_classes %}">
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Field' %}
+ </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'Old value' %}
+ </th>
+
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'New value' %}
+ </th>
+ </tr>
+ </thead>
+
+ {% for change in record.history_delta_changes %}
+ <tr class="{% table_row_classes %}">
+ <td class="font-semibold text-important w-3xs">
+ {{ change.field }}
+ </td>
+
+ <td>
+ {% if change.old %}
+ <span>
+ {% if change.old == "None" %}
+ <code>None</code>
+ {% else %}
+ {{ change.old }}
+ {% endif %}
+ </span>
+ {% else %}
+ -
+ {% endif %}
+ </td>
+
+ <td>
+ {% if change.new %}
+ {% if change.new == "None" %}
+ <code>None</code>
+ {% else %}
+ {{ change.new }}
+ {% endif %}
+ {% else %}
+ -
+ {% endif %}
+ </td>
+ </tr>
+ {% endfor %}
+ </table>
+ </td>
+ </tr>
+ {% endif %}
+ {% endwith %}
+ </tbody>
+ {% endfor %}
+ </table>
+</div>

@@ -10,8 +10,6 @@ class OverrideContentTypeMiddleware:
     def __call__(self, request):
         # Check if Content-Type is missing or empty
         if not request.content_type:
-            request.META["CONTENT_TYPE"] = (
-                "application/json"  # Set Content-Type as application/json
-            )
+            request.META["CONTENT_TYPE"] = "application/json"  # Set Content-Type as application/json
         response = self.get_response(request)
         return response

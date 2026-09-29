@@ -1,26 +1,69 @@
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 from urllib.parse import urlparse
 
+from corsheaders.defaults import default_headers
 from environs import Env
 
+# =============================================================================
+# Bootstrap & helpers
+# =============================================================================
 env = Env()
 env.read_env()
-env.read_env(path=".secrets/aws.secret")
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+_aws_secret = BASE_DIR / ".secrets" / "aws.secret"
+if _aws_secret.exists():
+    env.read_env(path=str(_aws_secret))
+
+
+# =============================================================================
+# Project defaults
+# =============================================================================
+DEFAULT_ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+]
+DEFAULT_CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+DEFAULT_CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+
+# =============================================================================
+# Core Django
+# =============================================================================
 SECRET_KEY = env("SECRET_KEY", default="django-insecure-change-this-in-production")
+DEBUG = env.bool("DEBUG", default=False)
+ALLOWED_HOSTS = ["*"] if DEBUG else env.list("ALLOWED_HOSTS", default=DEFAULT_ALLOWED_HOSTS)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG", False)
-ALLOWED_HOSTS = ["*"] if DEBUG else env.list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ROOT_URLCONF = "app.urls"
+WSGI_APPLICATION = "app.wsgi.application"
+ASGI_APPLICATION = "app.asgi.application"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Application definition
 
-CORE_APPS = [
+# =============================================================================
+# Applications
+# =============================================================================
+DJANGO_APPS = [
+    "backstage",
+    "backstage.contrib.forms",
+    "backstage.contrib.inlines",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -30,6 +73,7 @@ CORE_APPS = [
     "django.contrib.humanize",
 ]
 THIRD_PARTY_APPS = [
+    "tinymce",
     "rest_framework",
     "django_userforeignkey",
     "drf_standardized_errors",
@@ -38,24 +82,28 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_extensions",
     "django_celery_beat",
-    "storages",
     "django_celery_results",
+    "storages",
 ]
-
-APPS = [
+LOCAL_APPS = [
     "user",
+    "sample",
 ]
 
 INSTALLED_APPS = (
-    CORE_APPS
+    DJANGO_APPS
     + THIRD_PARTY_APPS
-    + APPS
+    + LOCAL_APPS
     + [
-        # Must be last — deletes FileField/ImageField files on model delete and replace.
+        # Must be last so file-deletion signals run after other app handlers.
         "django_cleanup.apps.CleanupConfig",
     ]
 )
 
+
+# =============================================================================
+# Middleware & templates
+# =============================================================================
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -69,12 +117,10 @@ MIDDLEWARE = [
     "app.middlewares.OverrideContentTypeMiddleware",
 ]
 
-ROOT_URLCONF = "app.urls"
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -87,11 +133,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "app.wsgi.application"
 
+# =============================================================================
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+# =============================================================================
 DATABASES = {
     "default": {
         "ENGINE": env("DB_ENGINE", default="django.db.backends.postgresql"),
@@ -104,42 +149,41 @@ DATABASES = {
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
+# =============================================================================
+# Internationalization & localization
+# =============================================================================
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = env("TIME_ZONE", default="America/Chicago")
+USE_I18N = True
+USE_TZ = True
+
+
+# =============================================================================
+# Authentication
+# =============================================================================
+AUTH_USER_MODEL = "user.User"
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "America/Chicago"
-USE_I18N = True
-USE_TZ = True
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = "user.User"
-
 AUTHENTICATION_BACKENDS = [
     "app.utils.backends.authentication.StatusBackend",
 ]
 
+
+# =============================================================================
+# API (DRF, JWT, Spectacular)
+# =============================================================================
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
     "DEFAULT_PAGINATION_CLASS": "app.utils.pagination.StandardPagination",
     "DEFAULT_RENDERER_CLASSES": ("app.utils.renderers.SuccessJsonResponse",),
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_FILTER_BACKENDS": (
         "django_filters.rest_framework.DjangoFilterBackend",
         "app.utils.filters.ExtendedSearchFilter",
@@ -166,27 +210,56 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_SETTINGS": {"deepLinking": True, "persistAuthorization": True},
 }
 
-# CORS Settings
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # CORS_ALLOWED_ORIGINS = [
-
-    # ] #TODO: !IMPORTANT: Update this list with actual origins before deployment
-
-    CORS_ALLOW_ALL_ORIGINS = True
-
-# CSRF Trusted Origins
-CSRF_TRUSTED_ORIGINS = env.list(
-    "CSRF_TRUSTED_ORIGINS",
-    default="http://localhost:8000,http://localhost:8080,http://127.0.0.1:8000,http://127.0.0.1:8080",
-)
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=15),
 }
 
+
+# =============================================================================
+# Security & CORS
+# =============================================================================
+USE_X_FORWARDED_HOST = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=DEFAULT_CORS_ALLOWED_ORIGINS,
+)
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-preview-token",
+)
+CORS_EXPOSE_HEADERS = [
+    "Content-Disposition",
+]
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=DEFAULT_CSRF_TRUSTED_ORIGINS,
+)
+X_FRAME_OPTIONS = "DENY"
+
+if not DEBUG:
+    # HTTPS
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    # HSTS
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = False
+    # Browser security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    # Cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+
+# =============================================================================
+# Async tasks (Celery, Redis cache, optional Channels)
+# =============================================================================
 def normalize_redis_base(url: str) -> str:
     url = url.rstrip("/")
     parsed = urlparse(url)
@@ -233,66 +306,128 @@ if CHANNELS_ENABLED:
     }
 
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "file": {
-#             "level": "DEBUG",
-#             "class": "logging.FileHandler",
-#             "filename": "logs/django.log",
-#             "formatter": "verbose",
-#         },
-#     },
-#     "formatters": {
-#         "verbose": {
-#             "format": "[{asctime}] {levelname} {name}: {message}",
-#             "style": "{",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["file"],
-#             "level": "INFO",
-#             "propagate": False,
-#         },
-#     },
-# }
+# =============================================================================
+# Static, media & storage
+# =============================================================================
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
+USE_S3_STORAGE = env.bool("USE_S3_STORAGE", default=False)
 
+if USE_S3_STORAGE:
+    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+    AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 
-SECURE_PROXY_SSL_HEADER = (
-    "HTTP_X_FORWARDED_PROTO",
-    env("SECURE_PROXY_SSL_HEADER", default="https"),
-)
+    AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default="").strip() or None
+    AWS_S3_CUSTOM_DOMAIN = env("AWS_S3_CUSTOM_DOMAIN", default="").strip() or None
 
-# Storage Settings
-if not DEBUG:
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = True
+    AWS_QUERYSTRING_EXPIRE = 86400
+
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3.S3Storage",
-            "OPTIONS": {
-                "file_overwrite": False,
-                "location": "media",
-            },
+            "OPTIONS": {"location": "media"},
         },
         "staticfiles": {
             "BACKEND": "storages.backends.s3.S3Storage",
-            "OPTIONS": {
-                # "file_overwrite": True,
-                "location": "static",
-            },
+            "OPTIONS": {"location": "static"},
         },
     }
-    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="")
-    AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="us-east-2")
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-else:
-    STATIC_URL = "static/"
-    MEDIA_URL = "media/"
-    MEDIA_ROOT = "media"
-    STATIC_ROOT = "staticfiles"
 
-# Email Configuration
+    if AWS_S3_CUSTOM_DOMAIN:
+        STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+        MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+
+# =============================================================================
+# Communications
+# =============================================================================
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
+
+
+# =============================================================================
+# Backstage (admin UI)
+# =============================================================================
+from app.backstage_host import (  # noqa: E402
+    ADMIN_OVERRIDES,
+    DASHBOARD,
+    FIELD_EDITOR_META,
+    MODEL_ICONS,
+    MODEL_LABELS,
+    NAV_GROUPS,
+    TAB_DESCRIPTIONS,
+)
+
+BACKSTAGE = {
+    "SITE_TITLE": "Template Admin",
+    "SITE_HEADER": "Django Template",
+    "SITE_SUBHEADER": "Backstage reference host",
+    "SITE_URL": FRONTEND_URL,
+    "NAV_GROUPS": NAV_GROUPS,
+    "MODEL_ICONS": MODEL_ICONS,
+    "MODEL_LABELS": MODEL_LABELS,
+    "PREVIEW_ROUTE_CALLBACK": "app.backstage_host.resolve_preview_route",
+    "DRAFT_PUBLISH": {
+        "enabled": True,
+        "models": ["sample.samplearticle"],
+    },
+    "ADMIN_OVERRIDES": ADMIN_OVERRIDES,
+    "FIELD_EDITOR_META": FIELD_EDITOR_META,
+    "TAB_DESCRIPTIONS": TAB_DESCRIPTIONS,
+    "DASHBOARD": DASHBOARD,
+    "SKIP_APP_LABELS": [
+        "contenttypes",
+        "sessions",
+        "admin",
+        "django_celery_beat",
+        "django_celery_results",
+    ],
+}
+
+
+# =============================================================================
+# Logging
+# =============================================================================
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"verbose": {"format": "{asctime} [{levelname}] {name}: {message}", "style": "{"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "verbose"}},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.server": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "gunicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "daphne": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+    "root": {"handlers": ["console"], "level": "INFO"},
+}
+
+
+# =============================================================================
+# TinyMCE (admin rich text)
+# =============================================================================
+TINYMCE_DEFAULT_CONFIG = {
+    "height": 400,
+    "menubar": False,
+    "plugins": "link image lists advlist",
+    "toolbar": "undo redo | bold italic underline | bullist numlist | link image",
+    "automatic_uploads": True,
+    "images_upload_handler": "tinymceImageUploadHandler",
+    "relative_urls": False,
+    "remove_script_host": False,
+    "content_style": (
+        "body { font-family: system-ui, sans-serif; font-size: 14px; "
+        "background-color: transparent; margin: 0.5rem; } "
+        "a, a:visited { color: var(--color-primary-600); text-decoration: underline; } "
+        "a:hover { color: var(--color-primary-700); }"
+    ),
+}

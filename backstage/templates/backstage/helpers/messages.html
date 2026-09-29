@@ -1,0 +1,19 @@
+{% if messages %}
+ <ul class="flex flex-col gap-3 mb-4">
+ {% for message in messages %}
+ <li class="*:mb-0!">
+ {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+ {% include "backstage/helpers/messages/info.html" with message=message %}
+ {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+ {% include "backstage/helpers/messages/success.html" with message=message %}
+ {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+ {% include "backstage/helpers/messages/warning.html" with message=message %}
+ {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+ {% include "backstage/helpers/messages/error.html" with message=message %}
+ {% else %}
+ {% include "backstage/helpers/messages/debug.html" with message=message %}
+ {% endif %}
+ </li>
+ {% endfor %}
+ </ul>
+{% endif %}

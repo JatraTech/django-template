@@ -1,0 +1,102 @@
+# =============================================================================
+# Universal .dockerignore — Django / Python / Node / React / AI Tools
+# =============================================================================
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+secrets.json
+credentials.json
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# AI Coding Assistants
+.cursor/
+.cursorrules
+.cursorignore
+.kilo/
+.kilocode/
+.claude/
+.claudeignore
+.continue/
+.aider*
+.ai/
+.ai-cache/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+htmlcov/
+.coverage
+
+# Django runtime files
+staticfiles/
+media/
+db.sqlite3
+*.sqlite3
+local_settings.py
+
+# Node / Frontend
+node_modules/
+jspm_packages/
+dist/
+build/
+.next/
+.nuxt/
+.svelte-kit/
+.cache/
+.parcel-cache/
+.turbo/
+.vercel/
+.netlify/
+
+.yarn/
+.pnpm-store/
+.npm/
+.pnp.*
+
+# Docker / CI
+.dockerignore
+docker-compose*.yml
+.github/
+
+# Backups / local data
+backups/
+postgres-data/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Documentation (optional)
+README*
+docs/

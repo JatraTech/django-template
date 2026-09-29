@@ -1,0 +1,21 @@
+<div class="lg:min-w-56 lg:w-56 lg:h-[38px] lg:flex lg:items-center lg:self-start lg:leading-[38px] lg:*:m-0 [&_label]:ml-0">
+ {{ field.label_tag }}
+</div>
+
+<div class="flex flex-col gap-2 grow min-w-0">
+ <div class="flex flex-wrap items-center gap-3 backstage-control-height">
+ <div class="shrink-0 flex items-center">
+ {{ field.field }}
+ </div>
+
+ {% if field.field.help_text %}
+ {% include "backstage/helpers/help_text.html" with help_text=field.field.help_text inline=1 %}
+ {% endif %}
+ </div>
+
+ {% if field.errors %}
+ <div class="text-red-600 text-xs dark:text-red-500">
+ {{ field.errors }}
+ </div>
+ {% endif %}
+</div>

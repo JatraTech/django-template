@@ -1,0 +1,43 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+ {% include "backstage/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="backstage-dashboard flex flex-col gap-6">
+ {% for widget_id in dashboard_layout %}
+  {% if widget_id == "welcome" and dashboard_widgets.welcome %}
+   {% include "backstage/dashboard/widgets/welcome.html" with welcome=dashboard_widgets.welcome %}
+  {% elif widget_id == "stats" and dashboard_widgets.stats %}
+   {% include "backstage/dashboard/widgets/stats.html" with stats=dashboard_widgets.stats %}
+  {% endif %}
+ {% endfor %}
+
+ {% if "quick_actions" in dashboard_layout or "my_drafts" in dashboard_layout or "recent_activity" in dashboard_layout %}
+ <div class="backstage-dashboard-columns">
+  <div class="backstage-dashboard-columns__main flex flex-col gap-6">
+   {% if "quick_actions" in dashboard_layout and dashboard_widgets.quick_actions %}
+    {% include "backstage/dashboard/widgets/quick_actions.html" with actions=dashboard_widgets.quick_actions %}
+   {% endif %}
+   {% if "my_drafts" in dashboard_layout %}
+    {% include "backstage/dashboard/widgets/my_drafts.html" with drafts=dashboard_widgets.my_drafts %}
+   {% endif %}
+  </div>
+  {% if "recent_activity" in dashboard_layout %}
+  <div class="backstage-dashboard-columns__aside">
+   {% include "backstage/dashboard/widgets/recent_activity.html" with activity=dashboard_widgets.recent_activity %}
+  </div>
+  {% endif %}
+ </div>
+ {% endif %}
+
+ {% if dashboard_show_app_list %}
+  {% include "backstage/dashboard/widgets/app_list.html" %}
+ {% endif %}
+</div>
+{% endblock %}

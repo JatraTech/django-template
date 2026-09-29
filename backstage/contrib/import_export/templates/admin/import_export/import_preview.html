@@ -1,0 +1,47 @@
+{% load admin_urls i18n import_export_tags backstage backstage_list %}
+
+{% block preview %}
+ <div class="border border-border mb-3 overflow-auto scrollbar-default w-full rounded-default dark:border-border">
+ <table class="import-preview-table {% table_classes %}">
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ <th class="{% table_header_cell_classes %} w-px"></th>
+
+ {% for field in result.diff_headers %}
+ <th class="{% table_header_cell_classes %}">
+ {{ field }}
+ </th>
+ {% endfor %}
+ </tr>
+ </thead>
+
+ <tbody>
+ {% for row in result.valid_rows %}
+ <tr class="{% table_row_classes %} {{ row.import_type }}">
+ <td>
+ {% if row.import_type == 'new' %}
+ {% trans "New" as label_title %}
+ {% include "backstage/helpers/label.html" with text=label_title variant="success" %}
+ {% elif row.import_type == 'skip' %}
+ {% trans "Skipped" as label_title %}
+ {% include "backstage/helpers/label.html" with text=label_title variant="warning" %}
+ {% elif row.import_type == 'delete' %}
+ {% trans "Delete" as label_title %}
+ {% include "backstage/helpers/label.html" with text=label_title variant="danger" %}
+ {% elif row.import_type == 'update' %}
+ {% trans "Update" as label_title %}
+ {% include "backstage/helpers/label.html" with text=label_title variant="info" %}
+ {% endif %}
+ </td>
+
+ {% for field in row.diff %}
+ <td>
+ {{ field }}
+ </td>
+ {% endfor %}
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+{% endblock %}

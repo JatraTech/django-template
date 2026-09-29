@@ -1,4 +1,5 @@
-from typing import Iterable
+from collections.abc import Iterable
+
 from django.db import models
 from django_userforeignkey.models.fields import UserForeignKey
 
@@ -28,9 +29,7 @@ class CodeModelManager(ModelManager):
     def get_queryset(self):
         return super().get_queryset().annotate(_full_code=models.Value("FULL_CODE"))
 
-    def bulk_create(
-        self, objs: Iterable, global_code: bool = True, *args, **kwargs
-    ) -> list:
+    def bulk_create(self, objs: Iterable, global_code: bool = True, *args, **kwargs) -> list:
         latest_code = 0
         if global_code:
             if latest_code_obj := self.model.get_latest_code_qs().first():
@@ -66,7 +65,11 @@ class ModelMixin(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True,
     )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Visible on website",
+        help_text="Turn off to hide from the public site without deleting.",
+    )
 
     objects: ModelManager = ModelManager()
 
@@ -79,11 +82,7 @@ class ModelMixin(models.Model):
 
     @classmethod
     def get_choice_fields(cls):
-        return [
-            i.name
-            for i in cls._meta.get_fields()
-            if hasattr(i, "choices") and i.choices
-        ]
+        return [i.name for i in cls._meta.get_fields() if hasattr(i, "choices") and i.choices]
 
 
 class NameModelMixin(ModelMixin):

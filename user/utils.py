@@ -1,12 +1,12 @@
+import base64
 import random
 import string
-import base64
 
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Q
 from rest_framework import serializers
 
 from user.models import User
-from django.contrib.auth.tokens import default_token_generator
 
 
 def generate_username(first_name: str, last_name: str) -> str:
@@ -33,9 +33,7 @@ def generate_username(first_name: str, last_name: str) -> str:
 
 def get_password_reset_token_for_email_or_username(email_or_username):
     try:
-        user = User.objects.get(
-            Q(username=email_or_username) | Q(email=email_or_username)
-        )
+        user = User.objects.get(Q(username=email_or_username) | Q(email=email_or_username))
         token = default_token_generator.make_token(user)
         uidb64 = base64.urlsafe_b64encode(str(user.pk).encode()).decode()
         return (user, uidb64, token)

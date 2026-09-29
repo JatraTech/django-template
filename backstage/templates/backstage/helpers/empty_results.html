@@ -1,0 +1,37 @@
+{% load admin_urls i18n backstage %}
+
+{% url cl.opts|admin_urlname:"add" as add_url %}
+{% blocktranslate with name=cl.opts.verbose_name asvar title %}Add {{ name }}{% endblocktranslate %}
+
+ <div class="flex flex-col items-center px-8 backstage-empty-state {% if cl.is_dataset %}border border-border rounded-default bg-white dark:bg-base-900 dark:border-border{% endif %} {% if cl.search_fields and not cl.is_dataset %}rounded-b-default{% elif not cl.is_dataset %}rounded-default{% endif %} {% if cl.is_dataset %}py-16{% else %}py-24{% endif %}">
+ {% if not cl.is_dataset %}
+ <div class="border border-border border-dashed flex h-24 items-center justify-center mb-8 rounded-full w-24 dark:border-border">
+ <span class="material-symbols-outlined text-base-500 text-5xl! dark:text-base-400">inbox</span>
+ </div>
+ {% endif %}
+
+ <h2 class="font-semibold mb-1 text-xl text-font-important-light tracking-tight dark:text-font-important-dark">
+ {% trans "No results found" %}
+ </h2>
+
+ <p class="mb-6 text-center text-muted-foreground">
+ {% trans "No items match your search or filters. Create a new item or reset your filters." %}
+ </p>
+
+ {% if has_add_permission or cl.has_filters %}
+ <div class="flex flex-col gap-4 justify-center w-full lg:flex-row">
+ {% if has_add_permission %}
+ {% add_preserved_filters add_url is_popup to_field as add_href %}
+ {% component "backstage/components/button.html" with href=add_href variant="primary" size="sm" icon="add" class="w-full lg:w-auto" %}
+ {{ title }}
+ {% endcomponent %}
+ {% endif %}
+
+ {% if cl.has_filters or cl.query %}
+ {% component "backstage/components/button.html" with href="?" variant="default" size="sm" icon="filter_list_off" class="w-full lg:w-auto" %}
+ {% trans "Reset filters" %}
+ {% endcomponent %}
+ {% endif %}
+ </div>
+ {% endif %}
+</div>

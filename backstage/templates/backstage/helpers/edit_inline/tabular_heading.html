@@ -1,0 +1,26 @@
+{% load i18n backstage_list %}
+
+<thead class="hidden relative lg:table-header-group">
+ <tr class="{% table_head_row_classes %}">
+ {% for field in inline_admin_formset.fields %}
+ {% if not field.widget.is_hidden %}
+ <th class="column-{{ field.name }}{% if field.required %} required{% endif %} {% table_header_cell_classes %} px-1.5 first:pl-4 last:pr-4 {% if inline_admin_formset.opts.ordering_field and field.name == inline_admin_formset.opts.ordering_field and inline_admin_formset.opts.hide_ordering_field %}hidden{% endif %}">
+ <span class="flex flex-row items-center">
+ <span>
+ {{ field.label|capfirst }}{% if field.required %}<span class="text-red-600 dark:text-red-500">*</span>{% endif %}
+ </span>
+
+ {% if field.help_text %}
+ <span class="cursor-help material-symbols-outlined ml-2 text-icon" title="{{ field.help_text|striptags }}">help</span>
+ {% endif %}
+ </span>
+ </th>
+ {% endif %}
+ {% endfor %}
+
+ {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
+ <th class="{% table_header_cell_classes %} w-px">
+ </th>
+ {% endif %}
+ </tr>
+</thead>

@@ -1,0 +1,22 @@
+{% load i18n %}
+
+<div class="backstage-dashboard-module backstage-surface-card">
+ <div class="backstage-dashboard-module__header">
+  <span class="material-symbols-outlined backstage-dashboard-module__header-icon" aria-hidden="true">bolt</span>
+  {% trans "Quick actions" %}
+ </div>
+ <div class="backstage-dashboard-module__body">
+  {% if actions %}
+  <div class="backstage-dashboard-quick-actions">
+   {% for action in actions %}
+   <a href="{{ action.url }}" class="backstage-dashboard-quick-action">
+    <span class="material-symbols-outlined" aria-hidden="true">{{ action.icon }}</span>
+    <span class="backstage-dashboard-quick-action__label">{{ action.label }}</span>
+   </a>
+   {% endfor %}
+  </div>
+  {% else %}
+  <p class="backstage-dashboard-module__empty">{% trans "No quick actions configured." %}</p>
+  {% endif %}
+ </div>
+</div>

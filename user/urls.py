@@ -1,11 +1,11 @@
+from django.urls import include, path
 from rest_framework import routers
-from django.urls import path, include
-from user.views import UserViewSet
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
+from user.views import UserViewSet
 from user.views.auth import AuthViewSet
 
 router = routers.SimpleRouter()

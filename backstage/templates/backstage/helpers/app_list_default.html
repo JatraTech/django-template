@@ -1,0 +1,72 @@
+{% load i18n backstage_list %}
+
+{% if app_list %}
+ {% for app in app_list %}
+ <div class="app-{{ app.app_label }} module mb-6{% if app.app_url in request.path %} current-app{% endif %}">
+ <div class="overflow-hidden rounded-default border border-border bg-card dark:bg-base-900">
+ <div class="border-b border-border bg-muted/50 px-4 py-3 dark:bg-white/[.03]">
+ <a href="{{ app.app_url }}"
+ class="section font-semibold text-foreground hover:text-primary-600 dark:hover:text-primary-500"
+ title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+ {{ app.name }}
+ </a>
+ </div>
+
+ <table class="{% table_classes %}">
+ {% for model in app.models %}
+ <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %} transition-colors hover:bg-muted/50">
+ {% if model.admin_url %}
+ <th scope="row"
+ class="font-normal px-4 py-3 text-left text-foreground {% if not forloop.last %}border-b border-border{% endif %}">
+ <a href="{{ model.admin_url }}"
+ class="hover:text-primary-600 dark:hover:text-primary-500"
+ {% if model.admin_url in request.path %}aria-current="page"{% endif %}>
+ {{ model.name }}
+ </a>
+ </th>
+ {% else %}
+ <th scope="row"
+ class="font-normal px-4 py-3 text-left text-foreground {% if not forloop.last %}border-b border-border{% endif %}">
+ {{ model.name }}
+ </th>
+ {% endif %}
+
+ <td class="px-4 py-3 text-right {% if not forloop.last %}border-b border-border{% endif %}">
+ <div class="ml-auto flex flex-row items-center justify-end gap-4">
+ {% if model.add_url %}
+ <a href="{{ model.add_url }}"
+ class="addlink block leading-none text-muted-foreground transition-colors hover:text-primary-600 dark:hover:text-primary-500"
+ title="{% translate 'Add' %}">
+ <span class="material-symbols-outlined">add</span>
+ </a>
+ {% endif %}
+
+ {% if model.admin_url and show_changelinks %}
+ {% if model.view_only %}
+ <a href="{{ model.admin_url }}"
+ class="viewlink block leading-none text-muted-foreground transition-colors hover:text-primary-600 dark:hover:text-primary-500"
+ title="{% translate 'View' %}">
+ <span class="material-symbols-outlined">visibility</span>
+ </a>
+ {% else %}
+ <a href="{{ model.admin_url }}"
+ class="changelink block leading-none text-muted-foreground transition-colors hover:text-primary-600 dark:hover:text-primary-500"
+ title="{% translate 'Change' %}">
+ <span class="material-symbols-outlined">edit_square</span>
+ </a>
+ {% endif %}
+ {% endif %}
+ </div>
+ </td>
+ </tr>
+ {% endfor %}
+ </table>
+ </div>
+ </div>
+ {% endfor %}
+{% else %}
+ <p>
+ {% trans "You don’t have permission to view or edit anything." as error_message %}
+ {% include "backstage/helpers/messages/error.html" with error=error_message %}
+ </p>
+{% endif %}

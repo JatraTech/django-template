@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<section class="backstage-dashboard-welcome" aria-labelledby="backstage-dashboard-welcome-title">
+ <div class="backstage-dashboard-welcome__header">
+  <div class="backstage-dashboard-welcome__hero" aria-hidden="true">
+   <span class="material-symbols-outlined backstage-dashboard-welcome__hero-icon">waving_hand</span>
+  </div>
+  <div class="backstage-dashboard-welcome__copy">
+   <h1 id="backstage-dashboard-welcome-title" class="backstage-dashboard-welcome__title">
+    {% blocktranslate with name=welcome.title %}Welcome to {{ name }}{% endblocktranslate %}
+   </h1>
+   <p class="backstage-dashboard-welcome__body">{{ welcome.body }}</p>
+  </div>
+ </div>
+ {% if welcome.links %}
+ <nav class="backstage-dashboard-welcome-links" aria-label="{% trans 'Helpful links' %}">
+  {% for link in welcome.links %}
+  <a href="{{ link.url }}" class="backstage-dashboard-welcome-link{% if link.external %} backstage-dashboard-welcome-link--external{% endif %}"{% if link.external %} target="_blank" rel="noopener noreferrer"{% endif %}>
+   {% if link.icon %}
+   <span class="material-symbols-outlined" aria-hidden="true">{{ link.icon }}</span>
+   {% endif %}
+   <span>{{ link.label }}</span>
+  </a>
+  {% endfor %}
+ </nav>
+ {% endif %}
+</section>

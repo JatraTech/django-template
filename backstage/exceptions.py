@@ -1,0 +1,2 @@
+class BackstageException(Exception):
+    pass

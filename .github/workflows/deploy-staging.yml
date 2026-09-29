@@ -1,0 +1,53 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging-${{ github.repository }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Backend (Docker)
+    runs-on: ubuntu-latest
+    environment: Staging
+    timeout-minutes: 20
+
+    steps:
+      - name: Deploy backend to staging server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.STAGING_REMOTE_HOST }}
+          username: ${{ secrets.STAGING_REMOTE_USER }}
+          key: ${{ secrets.STAGING_REMOTE_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            echo "Starting staging deployment..."
+
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+
+            cd "${{ secrets.STAGING_REMOTE_PATH }}"
+
+            echo "Updating source code..."
+            git fetch origin staging --prune
+            git reset --hard origin/staging
+
+            echo "Building containers..."
+            docker compose -f docker-compose.staging.yml build --pull
+
+            echo "Starting containers..."
+            docker compose -f docker-compose.staging.yml up -d --remove-orphans
+
+            echo "Cleaning unused images..."
+            docker image prune -f
+
+            echo "Staging deployment successful"

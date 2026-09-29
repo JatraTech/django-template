@@ -1,0 +1,25 @@
+{% load i18n %}
+
+{% if stats %}
+<div class="backstage-dashboard-stats grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+ {% for card in stats %}
+ {% if card.url %}
+ <a href="{{ card.url }}" class="backstage-dashboard-stat" data-accent="{{ card.accent|default:'blue' }}">
+ {% else %}
+ <div class="backstage-dashboard-stat" data-accent="{{ card.accent|default:'blue' }}">
+ {% endif %}
+  <div class="backstage-dashboard-stat__inner">
+   <div class="backstage-dashboard-stat__head">
+    <p class="backstage-dashboard-stat__label">{{ card.label }}</p>
+    <span class="material-symbols-outlined backstage-dashboard-stat__icon">{{ card.icon }}</span>
+   </div>
+   <p class="backstage-dashboard-stat__value">{{ card.count }}</p>
+  </div>
+ {% if card.url %}
+ </a>
+ {% else %}
+ </div>
+ {% endif %}
+ {% endfor %}
+</div>
+{% endif %}

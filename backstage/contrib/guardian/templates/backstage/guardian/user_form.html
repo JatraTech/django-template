@@ -1,0 +1,73 @@
+{% load i18n backstage backstage_list %}
+
+<form method="post" novalidate>
+ {% csrf_token %}
+
+ <h2 class="font-semibold text-base tracking-tight mb-3 text-important">
+ {% trans "User permissions" %}
+ </h2>
+
+ {% if users_perms.items %}
+ <div class="border border-border border-spacing-none mb-3 overflow-auto scrollbar-default w-full rounded-default dark:border-border">
+ <table id="user-permissions" class="{% table_classes %}">
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ <th class="{% table_header_cell_classes %}">
+ {% trans "User" %}
+ </th>
+
+ {% for perm in model_perms %}
+ <th class="{% table_header_cell_classes %}">
+ {{ perm.name }}
+ </th>
+ {% endfor %}
+
+ <th class="{% table_header_cell_classes %} w-px"></th>
+ </tr>
+ </thead>
+
+ <tbody>
+ {% for user, user_perms in users_perms.items %}
+ <tr class="{% table_row_classes %}">
+ <td>
+ <span>
+ {{ user }}
+ </span>
+ </td>
+
+ {% for perm in model_perms %}
+ <td>
+ {% if perm.codename in user_perms %}
+ {% include "backstage/helpers/boolean.html" with value=True %}
+ {% else %}
+ {% include "backstage/helpers/boolean.html" with value=False %}
+ {% endif %}
+ </td>
+ {% endfor %}
+
+ <td class="w-px">
+ {% capture as href silent %}user-manage/{{ user.id|safe }}/{% endcapture %}
+
+ {% component "backstage/components/button.html" with size="xs" variant="default" href=href %}
+ {% trans "Edit" %}
+ {% endcomponent %}
+ </td>
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ {% endif %}
+
+ <div class="border border-border overflow-hidden rounded-default p-3 dark:border-border">
+ {% for field in user_form %}
+ {% include "admin/guardian/model/field.html" %}
+ {% endfor %}
+
+ <div class="border-t border-border flex justify-end -mx-3 pt-3 px-3 dark:border-border">
+ {% component "backstage/components/button.html" with submit=1 name="submit_manage_user" %}
+ {% trans "Manage user" %}
+ {% endcomponent %}
+ </div>
+ </div>
+</form>

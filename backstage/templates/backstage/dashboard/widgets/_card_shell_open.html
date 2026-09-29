@@ -1,0 +1,6 @@
+{% load i18n %}
+<div class="overflow-hidden rounded-default border border-border bg-card shadow-sm dark:bg-base-900{% if shell_class %} {{ shell_class }}{% endif %}">
+ <div class="border-b border-border bg-muted/40 px-5 py-3.5 dark:bg-white/[.03]">
+  <h2 class="font-semibold text-foreground">{{ title }}</h2>
+ </div>
+ <div{% if content_class %} class="{{ content_class }}"{% endif %}>

@@ -1,0 +1,227 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n admin_urls static admin_modify backstage %}
+
+{% block extrahead %}{{ block.super }}
+ <script src="{% url 'admin:jsi18n' %}"></script>
+ {{ media }}
+ {% if preview_split_pane %}
+ <script src="{% static 'backstage/preview.js' %}" defer></script>
+ {% endif %}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% if preview_split_pane %} backstage-preview-split{% endif %}{% endblock %}
+
+{% block nav-global %}{% spaceless %}
+ {% if change and not is_popup %}
+ {% block object-tools-items %}
+ {% change_form_object_tools %}
+ {% endblock %}
+ {% endif %}
+{% endspaceless %}{% endblock %}
+
+{% block nav-global-side %}
+ {% if has_add_permission %}
+ {% include "backstage/helpers/add_link.html" %}
+ {% endif %}
+{% endblock %}
+
+{% block content %}
+ <div id="content-main" class="{% if preview_split_pane %}backstage-split-layout{% endif %}">
+ <div class="{% if preview_split_pane %}backstage-split-form{% endif %}">
+ {% block form_before %}{% endblock %}
+
+ {% if adminform.model_admin.change_form_outer_before_template %}
+ {% include adminform.model_admin.change_form_outer_before_template %}
+ {% endif %}
+
+ <form {% if adminform.model_admin.conditional_fields %}x-data='{{ adminform|changeform_data }}'{% endif %} {% if has_file_field %}enctype="multipart/form-data" {% endif %}{% if form_url %}action="{{ form_url }}"{% endif %} x-bind:action="activeTab && activeTab !== 'general' ? window.location.pathname + window.location.search + '#' + activeTab : window.location.pathname + window.location.search" method="post" id="{{ opts.model_name }}_form" {% if adminform.model_admin.warn_unsaved_form %}class="warn-unsaved-form"{% endif %} novalidate>
+ {% csrf_token %}
+
+ {% if adminform.model_admin.change_form_before_template %}
+ {% include adminform.model_admin.change_form_before_template %}
+ {% endif %}
+
+ {% block form_top %}{% endblock %}
+
+ <div class="flex flex-col gap-6">
+ {% if is_popup %}
+ <input type="hidden" name="{{ is_popup_var }}" value="1">
+ {% endif %}
+
+ {% if to_field %}
+ <input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">
+ {% endif %}
+
+ {% if errors or adminform.form.non_field_errors %}
+ <div class="flex flex-col gap-4 *:mb-0">
+ {% include "backstage/helpers/messages/errornote.html" with errors=errors %}
+ {% include "backstage/helpers/messages/error.html" with errors=adminform.form.non_field_errors %}
+ </div>
+ {% endif %}
+
+ {% block field_sets %}
+ {% with has_conditional_display=adminform.model_admin.conditional_fields %}
+ {% for fieldset in adminform %}
+ {% if "tab" not in fieldset.classes %}
+ {% include 'admin/includes/fieldset.html' %}
+ {% endif %}
+ {% endfor %}
+
+ {% include "backstage/helpers/fieldsets_tabs.html" %}
+ {% endwith %}
+ {% endblock %}
+
+ {% block after_field_sets %}{% endblock %}
+
+ {% block inline_field_sets %}
+ {% for inline_admin_formset in inline_admin_formsets %}
+ {% include inline_admin_formset.opts.template %}
+ {% endfor %}
+ {% endblock %}
+
+ {% block after_related_objects %}{% endblock %}
+
+ {% block admin_change_form_document_ready %}
+ <script id="django-admin-form-add-constants" src="{% static 'admin/js/change_form.js' %}"{% if adminform and add %} data-model-name="{{ opts.model_name }}"{% endif %} async></script>
+ {% endblock %}
+
+ {% prepopulated_fields_js %}
+ </div>
+
+ {% if adminform.model_admin.change_form_after_template %}
+ {% include adminform.model_admin.change_form_after_template %}
+ {% endif %}
+ </form>
+
+ {% if datasets and datasets|length > 0 %}
+ <div class="flex flex-col {% if errors or adminform.form.non_field_errors %}mt-6{% endif %}">
+ {% for dataset in datasets %}
+ {{ dataset.contents }}
+ {% endfor %}
+ </div>
+ {% endif %}
+
+ {% if adminform.model_admin.change_form_outer_after_template %}
+ {% include adminform.model_admin.change_form_outer_after_template %}
+ {% endif %}
+
+ {% block form_after %}{% endblock %}
+ </div>
+
+ {% if preview_split_pane and preview_url %}
+ <aside class="backstage-split-preview backstage-elevated" id="backstage-preview-panel" data-preview-url="{{ preview_url }}"{% if draft_publish_enabled %} data-auto-refresh-preview="1"{% endif %}>
+ <div class="backstage-preview-toolbar">
+ <div class="backstage-preview-chrome">
+ <span class="backstage-preview-chrome-dots" aria-hidden="true">
+ <span></span><span></span><span></span>
+ </span>
+ <div class="backstage-preview-chrome-labels">
+ <span class="backstage-preview-title">{% translate "Preview" %}</span>
+ {% if edit_live_mode or live_published_pending_draft %}
+ <span class="backstage-preview-note">{% blocktranslate %}Live site — saving updates the public page{% endblocktranslate %}</span>
+ {% elif draft_publish_enabled %}
+ <span class="backstage-preview-note">{% blocktranslate %}Shows your draft — publish to update the live site{% endblocktranslate %}</span>
+ {% else %}
+ <span class="backstage-preview-note">{% blocktranslate %}Live site — save the form to update what you see{% endblocktranslate %}</span>
+ {% endif %}
+ </div>
+ <div class="backstage-preview-actions">
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="desktop" title="{% translate 'Desktop width' %}" aria-label="{% translate 'Desktop width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">computer</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="tablet" title="{% translate 'Tablet width' %}" aria-label="{% translate 'Tablet width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">tablet_mac</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="mobile" title="{% translate 'Mobile width' %}" aria-label="{% translate 'Mobile width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">smartphone</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="responsive" title="{% translate 'Drag to resize viewport' %}" aria-label="{% translate 'Drag to resize viewport' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">aspect_ratio</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon backstage-preview-refresh" title="{% translate 'Refresh preview' %}" aria-label="{% translate 'Refresh preview' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-expand aria-expanded="false" title="{% translate 'Expand preview' %}" aria-label="{% translate 'Expand preview' %}">
+ <span class="material-symbols-outlined" data-preview-expand-icon aria-hidden="true">open_in_full</span>
+ </button>
+ </div>
+ </div>
+ </div>
+ <div class="backstage-preview-frame-host" data-preview-inline-host>
+ <div class="backstage-preview-frame-wrap is-desktop" data-preview-frame-wrap>
+ <div class="backstage-preview-size-label" data-preview-size-label aria-live="polite">1280 × 720</div>
+ <div class="backstage-preview-resize-handle is-east" data-preview-resize="e" title="{% translate 'Drag to resize width' %}"></div>
+ <div class="backstage-preview-resize-handle is-south" data-preview-resize="s" title="{% translate 'Drag to resize height' %}"></div>
+ <div class="backstage-preview-resize-handle is-southeast" data-preview-resize="se" title="{% translate 'Drag to resize' %}"></div>
+ <div class="backstage-preview-scaler" data-preview-scaler>
+ <iframe
+ id="backstage-preview-iframe"
+ class="backstage-preview-iframe"
+ src="{{ preview_url }}"
+ title="{% translate 'Content preview' %}"
+ width="1280"
+ height="720"
+ loading="lazy"
+ ></iframe>
+ </div>
+ </div>
+ </div>
+ </aside>
+
+ <div id="backstage-preview-overlay" class="backstage-preview-overlay" hidden aria-hidden="true">
+ <div class="backstage-preview-overlay-backdrop" data-preview-collapse></div>
+ <div class="backstage-preview-overlay-panel" role="dialog" aria-modal="true" aria-label="{% translate 'Preview' %}">
+ <div class="backstage-preview-toolbar">
+ <div class="backstage-preview-chrome">
+ <span class="backstage-preview-chrome-dots" aria-hidden="true">
+ <span></span><span></span><span></span>
+ </span>
+ <div class="backstage-preview-chrome-labels">
+ <span class="backstage-preview-title">{% translate "Preview" %}</span>
+ {% if edit_live_mode or live_published_pending_draft %}
+ <span class="backstage-preview-note">{% blocktranslate %}Live site — saving updates the public page{% endblocktranslate %}</span>
+ {% elif draft_publish_enabled %}
+ <span class="backstage-preview-note">{% blocktranslate %}Shows your draft — publish to update the live site{% endblocktranslate %}</span>
+ {% else %}
+ <span class="backstage-preview-note">{% blocktranslate %}Live site — save the form to update what you see{% endblocktranslate %}</span>
+ {% endif %}
+ </div>
+ <div class="backstage-preview-actions">
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="desktop" title="{% translate 'Desktop width' %}" aria-label="{% translate 'Desktop width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">computer</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="tablet" title="{% translate 'Tablet width' %}" aria-label="{% translate 'Tablet width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">tablet_mac</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="mobile" title="{% translate 'Mobile width' %}" aria-label="{% translate 'Mobile width' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">smartphone</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-width="responsive" title="{% translate 'Drag to resize viewport' %}" aria-label="{% translate 'Drag to resize viewport' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">aspect_ratio</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon backstage-preview-refresh" title="{% translate 'Refresh preview' %}" aria-label="{% translate 'Refresh preview' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+ </button>
+ <button type="button" class="backstage-preview-btn backstage-preview-btn--icon" data-preview-close title="{% translate 'Close preview' %}" aria-label="{% translate 'Close preview' %}">
+ <span class="material-symbols-outlined" aria-hidden="true">close_fullscreen</span>
+ </button>
+ </div>
+ </div>
+ </div>
+ <div class="backstage-preview-frame-host" data-preview-overlay-host></div>
+ </div>
+ </div>
+ {% endif %}
+ </div>
+{% endblock %}
+
+{% block footer %}
+ {% block submit_buttons_bottom %}
+ {% if draft_publish_custom_submit %}
+ {% include "backstage/draft/submit_line.html" %}
+ {% else %}
+ {% submit_row %}
+ {% endif %}
+ {% endblock %}
+{% endblock %}

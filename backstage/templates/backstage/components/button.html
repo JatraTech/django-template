@@ -1,0 +1,33 @@
+<{% if href %}a href="{{ href }}"{% else %}button{% endif%} {% if type %}type="{{ type }}"{% endif %} {% if submit %}type="submit"{% endif%} {% if form %}form="{{ form }}"{% endif %} {% if name %}name="{{ name }}"{% endif %} {% if value %}value="{{ value }}"{% endif %} {% if title %}title="{{ title }}"{% endif %} {% include "backstage/helpers/attrs.html" with attrs=attrs %}
+class="backstage-control box-border appearance-none font-medium inline-flex group items-center gap-1 relative {% if size == "sm" or size == "xs" %}rounded-sm{% else %}rounded-default{% endif %} justify-center whitespace-nowrap transition-colors {% if attrs.disabled %}cursor-not-allowed opacity-50{% else %}cursor-pointer{% endif %}
+{% if size == "lg" %}
+ gap-2 text-sm px-5 py-3 min-h-10
+{% elif size == "md" %}
+ text-sm px-5 py-2.5 min-h-9
+{% elif size == "sm" %}
+ text-sm px-3 py-1.5 min-h-9
+{% elif size == "xs" %}
+ text-sm px-2 py-1.5 min-h-8
+{% else %}
+ text-sm px-3 py-2 min-h-9
+{% endif %}
+{% if variant == "default" %}
+ border border-border bg-background text-foreground {% if not attrs.disabled %}hover:bg-muted{% endif %}
+{% elif variant == "ghost" %}
+ border border-transparent bg-transparent text-foreground {% if not attrs.disabled %}hover:bg-muted{% endif %}
+{% elif variant == "secondary" %}
+ bg-muted border border-transparent text-foreground {% if not attrs.disabled %}hover:bg-muted/80{% endif %}
+{% elif variant == "danger" %}
+ border border-red-600 bg-red-600 text-white {% if not attrs.disabled %}hover:bg-red-700 dark:hover:bg-red-500{% endif %}
+{% elif variant == "danger-outline" %}
+ border border-red-600 bg-transparent text-red-600 dark:text-red-400 {% if not attrs.disabled %}hover:bg-red-50 dark:hover:bg-red-950/30{% endif %}
+{% elif variant == "primary-outline" %}
+ border border-primary-600 bg-background text-primary-600 dark:border-primary-500 dark:text-primary-500 {% if not attrs.disabled %}hover:bg-primary-50 dark:hover:bg-primary-950/30{% endif %}
+{% else %}
+ border border-transparent bg-primary-600 text-primary-foreground {% if not attrs.disabled %}hover:bg-primary-600/90{% endif %}
+{% endif %}
+{% if class %} {{ class }}{% endif %}" {% include "backstage/helpers/attrs.html" %} {% if extra_attrs %}{{ extra_attrs }}{% endif %}>
+
+{% if icon %}<span class="material-symbols-outlined leading-none font-normal {% if size == "lg"%}-ml-2{% else %}-ml-0.5{% endif %}">{{ icon }}</span> {% endif %}
+{{ children }}
+</{% if href %}a{% else %}button{% endif%}>

@@ -1,5 +1,7 @@
 import re
+
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db.models import Q
 from rest_framework import serializers
@@ -11,8 +13,6 @@ from app.utils.mixins.serializers import (
 )
 from user.constants import UserRoleChoices
 from user.models import AccessHaltReasonChoices, User
-from django.contrib.auth.models import Permission
-
 from user.utils import generate_username
 
 
@@ -102,9 +102,7 @@ class PartialUserCreationSerializer(BaseModelSerializer):
 
     def create(self, validated_data):
         validated_data["is_active"] = False
-        validated_data["access_halt_reason"] = (
-            AccessHaltReasonChoices.APPLICATION_PENDING
-        )
+        validated_data["access_halt_reason"] = AccessHaltReasonChoices.APPLICATION_PENDING
         validated_data["username"] = generate_username(
             validated_data["first_name"],
             validated_data["last_name"],

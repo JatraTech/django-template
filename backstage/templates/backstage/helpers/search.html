@@ -1,0 +1,25 @@
+{% load i18n %}
+
+{% if sidebar_show_search %}
+ <div class="mb-2.5 mx-3 relative nav-search-expanded" x-on:click="$dispatch('opencommand')">
+ <div class="bg-background border border-border cursor-pointer flex flex-row items-center px-3 rounded-default relative w-full focus-within:border-primary-500 dark:bg-base-900">
+ <span class="material-symbols-outlined md-18 text-base-400">manage_search</span>
+
+ <div class="grow font-medium min-w-0 overflow-hidden p-2 text-font-subtle-light truncate focus:outline-hidden dark:bg-base-900 dark:text-font-subtle-dark">
+ {% trans 'Search apps and models...' %}
+ </div>
+
+ {% if 'Macintosh' in request.META.HTTP_USER_AGENT %}
+ {% include "backstage/helpers/shortcut.html" with icon="keyboard_command_key" shortcut="k" %}
+ {% else %}
+ {% include "backstage/helpers/shortcut.html" with icon="keyboard_control_key" shortcut="k" %}
+ {% endif %}
+ </div>
+ </div>
+
+ <div class="mb-2.5 mx-3 relative nav-search-collapsed justify-center" x-on:click="$dispatch('opencommand')">
+ <button type="button" class="backstage-control-height bg-background border border-border cursor-pointer flex w-9 items-center justify-center rounded-default text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground dark:bg-base-900" title="{% trans 'Search apps and models...' %}">
+ <span class="material-symbols-outlined md-18">manage_search</span>
+ </button>
+ </div>
+{% endif %}

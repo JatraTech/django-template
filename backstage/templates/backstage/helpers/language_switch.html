@@ -1,0 +1,19 @@
+{% load i18n %}
+
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+
+{% if show_languages %}
+ {% if languages_list %}
+ {% for language in languages_list %}
+ {% include "backstage/helpers/language_form.html" with language=language %}
+ {% endfor %}
+ {% else %}
+ {% for language in languages %}
+ {% include "backstage/helpers/language_form.html" with language=language %}
+ {% endfor %}
+ {% endif %}
+
+ <div class="border-t border-border mt-1 pt-1 dark:border-border"></div>
+{% endif %}

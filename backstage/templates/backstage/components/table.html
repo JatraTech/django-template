@@ -1,0 +1,117 @@
+{% load i18n backstage backstage_list %}
+
+<div class="flex flex-col {% if class %}{{ class }}{% endif %}">
+ {% if title %}
+ <h3 class="font-semibold mb-1 text-important text-sm">
+ {{ title }}
+ </h3>
+ {% endif %}
+
+ <div class="{% if card_included == 1 %}{% if card_size == "md" %}-m-3{% else %}-m-6{% endif %}{% else %} bg-card border border-border flex flex-col grow overflow-hidden rounded-default{% endif %} dark:bg-base-900">
+ <div {% if height %}style="max-height: {{ height }}px;"{% endif %} class="{% table_wrapper_classes %}">
+ <table class="{% table_classes %} {% if table_class %}{{ table_class }}{% endif %}">
+ {% if table.headers %}
+ <thead class="{% if height %}sticky top-0 z-100{% endif %}">
+ <tr class="{% table_head_row_classes %}">
+ {% for header in table.headers %}
+ <th class="{% table_header_cell_classes %} {% if card_included == 1 %}{% if card_size == "md" %}first:pl-4 last:pr-4{% else %}first:pl-6 last:pr-6{% endif %}{% endif %} {% if header|is_dict and header.class %}{{ header.class }}{% endif %}">
+ {% if header|is_dict %}
+ {{ header.content }}
+ {% else %}
+ {{ header|capfirst }}
+ {% endif %}
+ </th>
+ {% endfor %}
+ </tr>
+ </thead>
+ {% endif %}
+
+ {% if table.rows %}
+ {% for row in table.rows %}
+ <tbody class="relative" {% if row.attrs %}{% include "backstage/helpers/attrs.html" with attrs=row.attrs %} {% endif %} {% if row.table.collapsible %}x-data="{ rowOpen: false }"{% endif %}>
+ <tr class="{% table_row_classes %} group {% if forloop.first %}first-row{% endif %} relative">
+ {% for cell in row.cols|default:row %}
+ <td class="align-middle font-normal min-w-0 overflow-hidden text-left text-sm {% if card_included == 1 %}{% if card_size == "md" %}first:pl-4 last:pr-4{% else %}first:pl-6 last:pr-6{% endif %}{% endif %} {% if cell|is_dict and cell.class %}{{ cell.class }}{% endif %}">
+ {% if row.table.rows|length > 0 %}
+ <div class="flex items-center gap-2">
+ {% if forloop.first and row.table.rows|length > 0 and row.table.collapsible %}
+ <div class="material-symbols-outlined align-middle cursor-pointer text-muted-foreground select-none h-[18px] w-[18px] -rotate-90 transition-all" x-on:click="rowOpen = !rowOpen" x-bind:class="{'rotate-0': rowOpen}">
+ expand_more
+ </div>
+ {% endif %}
+
+ <div class="align-middle">
+ {% if cell|is_dict %}
+ {{ cell.content}}
+ {% else %}
+ {{ cell }}
+ {% endif %}
+ </div>
+ </div>
+ {% else %}
+ {% if cell|is_dict %}
+ {{ cell.content }}
+ {% else %}
+ {{ cell }}
+ {% endif %}
+ {% endif %}
+ </td>
+ {% endfor %}
+ </tr>
+
+ {% if "table" in row %}
+ <tr {% if row.table.collapsible %}x-show="rowOpen"{% endif %}>
+ <td colspan="100%">
+ {% if row.table.collapsible %}
+ <div class="absolute bg-primary-600 -bottom-px left-0 top-0 w-0.5 z-[50]" x-show="rowOpen"></div>
+ {% endif %}
+
+ <table class="{% table_classes %}">
+ {% if row.table.headers %}
+ <thead>
+ <tr class="{% table_head_row_classes %}">
+ {% for header in row.table.headers %}
+ <th class="{% table_header_cell_classes %} sortable column-description {% if card_included == 1 %}{% if card_size == "md" %}first:pl-4 last:pr-4{% else %}first:pl-6 last:pr-6{% endif %}{% endif %} {% if header|is_dict and header.class %}{{ header.class }}{% endif %}">
+ {% if header|is_dict %}
+ {{ header.content }}
+ {% else %}
+ {{ header }}
+ {% endif %}
+ </th>
+ {% endfor %}
+ </tr>
+ </thead>
+ {% endif %}
+
+ <tbody>
+ {% for nested_row in row.table.rows %}
+ <tr class="{% table_row_classes %} group {% if forloop.first %}first-row{% endif %} relative">
+ {% for cell in nested_row %}
+ <td class="align-middle font-normal min-w-0 overflow-hidden text-left text-sm {% if card_included == 1 %}{% if card_size == "md" %}first:pl-4 last:pr-4{% else %}first:pl-6 last:pr-6{% endif %}{% endif %} {% if cell|is_dict and cell.class %}{{ cell.class }}{% endif %}">
+ {% if cell|is_dict %}
+ {{ cell.content }}
+ {% else %}
+ {{ cell }}
+ {% endif %}
+ </td>
+ {% endfor %}
+ </tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </td>
+ </tr>
+ {% endif %}
+ </tbody>
+ {% endfor %}
+ {% endif %}
+ </table>
+ </div>
+
+ {% if not table.rows %}
+ <p class="bg-card flex grow items-center justify-center py-2 rounded-default dark:bg-base-900">
+ {% trans "No data" %}
+ </p>
+ {% endif %}
+ </div>
+</div>

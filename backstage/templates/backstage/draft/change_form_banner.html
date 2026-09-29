@@ -1,0 +1,48 @@
+{% load i18n admin_urls %}
+{% if draft_publish_enabled and original %}
+<div class="mb-4 rounded-default border border-border bg-muted/40 px-4 py-3 text-sm text-foreground" role="status">
+ {% if edit_live_mode %}
+ <p class="font-medium text-amber-700 dark:text-amber-400">{% translate "Editing live version (advanced)" %}</p>
+ <p class="mt-1 text-muted-foreground">
+  {% translate "Saving here updates the public site immediately. This bypasses the normal draft and Publish flow." %}
+ </p>
+ {% if pending_draft_pk %}
+ <p class="mt-2 text-muted-foreground">
+  {% translate "Saving here will ask you to confirm. The unpublished draft will be removed when you update the live site." %}
+ </p>
+ {% url opts|admin_urlname:'change' pending_draft_pk|admin_urlquote as draft_url %}
+ <p class="mt-2">
+  <a href="{{ draft_url }}" class="text-primary-600 underline dark:text-primary-400">
+   {% translate "Return to draft editing" %}
+  </a>
+ </p>
+ {% endif %}
+ {% elif live_published_pending_draft %}
+ <p class="font-medium">{% translate "Published on the live site" %}</p>
+ <p class="mt-1 text-muted-foreground">
+  {% translate "Save or Save and continue updates the public site immediately. Use Save draft & show preview to start a draft workflow—the live site stays unchanged until you Publish." %}
+ </p>
+ {% elif original.is_draft_copy %}
+ <p class="font-medium">{% translate "Editing draft" %}</p>
+ <p class="mt-1 text-muted-foreground">
+  {% translate "Use Save draft & update preview to refresh the preview without publishing. Publish saves your edits and updates the live site." %}
+ </p>
+ <p class="mt-2">
+ {% if original.live_version_id %}
+ {% url opts|admin_urlname:'change' original.live_version_id|admin_urlquote as live_url %}
+ <a href="{{ live_url }}?edit_live=1" class="text-primary-600 underline dark:text-primary-400">
+  {% translate "Edit live version (advanced)" %}
+ </a>
+ {% endif %}
+ </p>
+ {% elif not original.is_published %}
+ <p class="font-medium">{% translate "Not published yet" %}</p>
+ <p class="mt-1 text-muted-foreground">
+  {% translate "Save draft to preview your work, then Publish when ready for the live site." %}
+ </p>
+ {% endif %}
+</div>
+{% if edit_live_mode %}
+<input type="hidden" name="_edit_live" value="1" form="{{ opts.model_name }}_form">
+{% endif %}
+{% endif %}
