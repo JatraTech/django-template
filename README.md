@@ -2,7 +2,7 @@
 
 A production-ready Django REST API template with modern best practices, pre-configured authentication, async task processing, and Docker support.
 
-**Frontend counterpart:** [`../marketing-spa-template`](../marketing-spa-template) — Vite + React marketing SPA (SEO prerender, RTK Query, Backstage preview).
+**Frontend counterpart:** [`../react-marketing-template`](../react-marketing-template) — Vite + React marketing SPA (SEO prerender, RTK Query, Backstage preview).
 
 ## Features
 
@@ -267,7 +267,7 @@ def your_task():
 
 Staging uses [`docker-compose.staging.yml`](docker-compose.staging.yml) (separate Compose project, `:staging` image tag, isolated network/volumes). Set `COMPOSE_PROJECT_NAME`, `DB_NAME`, and `HOST_FORWARD_APP_PORT` in staging `.env` so staging does not collide with production on the same host.
 
-**Frontend:** pair with [`../marketing-spa-template`](../marketing-spa-template) — use its `deploy-production.yml` / `deploy-staging.yml` (static `dist/` rsync) for the React site.
+**Frontend:** pair with [`../react-marketing-template`](../react-marketing-template) — use its `deploy-production.yml` / `deploy-staging.yml` (static `dist/` rsync) for the React site.
 
 ## License
 

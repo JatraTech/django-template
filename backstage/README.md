@@ -6,11 +6,7 @@ Copyright © Building Plastics, Inc.
 
 ## Documentation
 
-**Canonical docs** live in the reference host repo:
-
-**[`django_template/docs/backstage/README.md`](../../django_template/docs/backstage/README.md)**
-
-Start with [`integration.md`](../../django_template/docs/backstage/integration.md). Copy [`backstage_host.example.py`](../../django_template/docs/backstage/examples/backstage_host.example.py) into your project as `yourapp/backstage_host.py`.
+**Documentation:** [`docs/backstage/README.md`](../docs/backstage/README.md) — start with [integration.md](../docs/backstage/integration.md).
 
 ## Install (minimal)
 
@@ -30,6 +26,20 @@ python manage.py check_backstage_integration
 ```
 
 Branding: **System → Admin appearance** (DB overrides `BACKSTAGE`).
+
+## Inline relations (host config)
+
+Canonical host guide: [integration.md](../docs/backstage/integration.md).
+
+Declare parent → child edges in `BACKSTAGE["INLINE_RELATIONS"]` (compiled at startup into inlines, `STANDALONE_CHILD_MODELS`, and child `exclude` as needed):
+
+| `mode` | Behavior |
+|--------|----------|
+| `default_stacked` | Editable stacked inline (factory default if omitted) |
+| `default_tabular` | Editable tabular inline |
+| `hub_tabular` / `hub_stacked` | Read-only summary + Edit/Delete + Add/View all footer; default **primary tab** with parent fieldset tabs |
+
+Legacy `INLINE_HUB` + manual `ADMIN_OVERRIDES.inlines` still work; prefer `INLINE_RELATIONS` for new hosts. Escape hatch: `inline_class` dotted path on a relation entry.
 
 ## Package layout
 
