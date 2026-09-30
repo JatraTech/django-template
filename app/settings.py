@@ -17,6 +17,9 @@ _aws_secret = BASE_DIR / ".secrets" / "aws.secret"
 if _aws_secret.exists():
     env.read_env(path=str(_aws_secret))
 
+APP_URL = env("APP_URL", default="http://localhost:8000")
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+APP_DOMAIN = urlparse(APP_URL).netloc
 
 # =============================================================================
 # Project defaults
@@ -348,8 +351,6 @@ if USE_S3_STORAGE:
 # =============================================================================
 # Communications
 # =============================================================================
-FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
-BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 
 
