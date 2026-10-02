@@ -1,9 +1,9 @@
 {% load i18n backstage_list %}
 
-<div class="{% if not hub_integrated %}flex flex-col gap-3{% endif %}" {% if inline_admin_formset.is_collapsible and nested_inline %}x-data="{ open: {% if inline_admin_formset.errors %}true{% else %}false{% endif %} }"{% endif%}>
+<div class="flex flex-col gap-3" {% if inline_admin_formset.is_collapsible and nested_inline %}x-data="{ open: {% if inline_admin_formset.errors %}true{% else %}false{% endif %} }"{% endif%}>
  {% include "backstage/helpers/edit_inline/inline_nested_heading.html" %}
 
- <div class="formset-wrapper {% if hub_integrated %}overflow-x-auto relative scrollbar-default{% else %}border border-border overflow-x-auto relative bg-card rounded-default scrollbar-default{% if nested_inline %}dark:bg-base-900{% endif %}{% endif %}" {% if inline_admin_formset.is_collapsible and nested_inline %}x-show="open"{% endif %}>
+ <div class="formset-wrapper border border-border overflow-x-auto relative bg-card rounded-default scrollbar-default{% if nested_inline %}dark:bg-base-900{% endif %}" {% if inline_admin_formset.is_collapsible and nested_inline %}x-show="open"{% endif %}>
  {{ inline_admin_formset.formset.management_form }}
 
  {% include "backstage/helpers/edit_inline/inline_errors.html" %}
@@ -15,9 +15,7 @@
  {% include "backstage/helpers/edit_inline/tabular_group.html" %}
  {% endfor %}
 
- {% if inline_admin_formset.opts.inline_mode != "hub" %}
  {% include "backstage/helpers/edit_inline/tabular_footer.html" %}
- {% endif %}
  </table>
  </div>
 

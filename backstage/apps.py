@@ -26,13 +26,9 @@ class BackstageConfig(AppConfig):
         admin.site = site
         sites.site = site
 
-        from django.conf import settings
-
         from backstage.registry.autodiscover import register_all_models
-        from backstage.registry.relations import apply_compiled_relations_to_settings
         from backstage.registry.settings_admin import BackstageSettingsAdmin  # noqa: F401
 
-        apply_compiled_relations_to_settings(settings)
         register_all_models()
 
         post_migrate.connect(

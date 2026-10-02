@@ -1,10 +1,10 @@
 # Backstage docs changelog
 
+## 2026-10-02
+
+- **BPI-aligned backstage:** Package matches [bpi-backend](https://github.com/JatraTech/django-template) factory behavior—inline-only page children, editable stacked/tabular inlines on parents, `ADMIN_OVERRIDES` for customization.
+- **Removed:** Hub inlines, `INLINE_RELATIONS`, `INLINE_HUB`, and `STANDALONE_CHILD_MODELS` compiler. Hosts that need custom inlines should use `ADMIN_OVERRIDES` (see [integration.md](integration.md)).
+
 ## 2026-09-29
 
-- **INLINE_RELATIONS**: unified host config for parent → child inlines (`default_stacked`, `default_tabular`, `hub_tabular`, `hub_stacked`); compiles standalone children and admin overrides at startup.
-- **Hub inlines**: read-only summary on parent forms with links to standalone child admin; documented in [features/hub-inlines.md](features/hub-inlines.md).
-- **Hub primary tabs**: hub panels can share the parent’s fieldset tab nav (`hub_primary_tab` / `"primary_tab": false` to opt out).
-- **Hub Add link**: footer uses `hub-add-link` (real `href`) so `app.js` does not treat Add as an in-page `#` row template.
-- **Hub table layout**: tabular title row skipped for hub; pk/fk in main row; last-row border cleanup.
-- **INLINE_HUB**: legacy; prefer `INLINE_RELATIONS` for new projects.
+- **INLINE_RELATIONS** and hub modes were added to django-template only; superseded by the BPI-aligned model above.

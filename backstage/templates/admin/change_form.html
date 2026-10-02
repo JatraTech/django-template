@@ -76,9 +76,7 @@
 
  {% block inline_field_sets %}
  {% for inline_admin_formset in inline_admin_formsets %}
- {% if inline_admin_formset.opts.inline_mode != "hub" or not inline_admin_formset.opts.hub_primary_tab %}
  {% include inline_admin_formset.opts.template %}
- {% endif %}
  {% endfor %}
  {% endblock %}
 

@@ -249,8 +249,6 @@ class BaseInlineMixin:
     hide_ordering_field = False  # TODO: rename to show_ordering_field
     collapsible = False
     tab = False
-    inline_mode = "default"  # "default" | "hub" (see HubInlineMixin / BackstageHub* inlines)
-    admin_action_links = False
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if hasattr(self, "hide_title"):
