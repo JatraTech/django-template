@@ -20,6 +20,7 @@
 @source inline("{hover:,dark:,}border-base-{50,{100..900..100},950} {hover:,dark:,}border-transparent");
 @source inline("{hover:,dark:,}{bg,border,text,ring,divide}-border {hover:,dark:,}{bg,text}-card {hover:,dark:,}{bg,text}-background {hover:,dark:,}{bg,text}-foreground {hover:,dark:,}{bg,text}-muted {hover:,dark:,}text-muted-foreground {hover:,dark:,}{bg,border}-input {hover:,dark:,}ring-ring {hover:,dark:,}text-primary-foreground divide-y divide-x {dark:,}divide-border/{30,40,50} border-border/{30,40,50} bg-muted/{30,40,50,60} focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background shadow-sm");
 @source inline("{hover:,dark:,}bg-{base,red,green,blue,orange}-{50,{100..900..100},950} bg-clip-text");
+@source inline("{2xl:,}{dark:,}bg-base-{800,900} {2xl:,}{dark:,}!bg-base-{800,900}");
 @source inline("{md:,lg:,}{min-h,h,min-w,w}-{1..10} {md:,lg:,}h-{1..10} {md:,lg:,}w-{fit,1/2,1/3,2/3,1/4,2/4,3/4,1/5,2/5,3/5,4/5,1/6,2/6,3/6,4/6,5/6,1/7,2/7,3/7,4/7,5/7,6/7,1..10,96}");
 @source inline("{md:,lg:,xl:,}gap-{0.5,{1..16}}");
 @source inline("{md:,lg:,xl:,}grid-cols-{1..16}");
@@ -803,16 +804,16 @@ div.jsoneditor-tree,
 }
 
 .jsoneditor div.jsoneditor-tree {
-  @apply bg-white dark:!bg-transparent;
+  @apply bg-white dark:bg-base-900;
 }
 
 .jsoneditor textarea.jsoneditor-text {
-  @apply !bg-transparent leading-relaxed p-3;
+  @apply bg-transparent leading-relaxed p-3 dark:bg-base-900;
 }
 
 .jsoneditor .jsoneditor-text,
 .jsoneditor .jsoneditor-tree {
-  @apply !bg-transparent !text-default dark:!bg-transparent;
+  @apply !text-default dark:bg-base-900;
 }
 
 .jsoneditor .jsoneditor-readonly {
@@ -820,7 +821,7 @@ div.jsoneditor-tree,
 }
 
 .jsoneditor .jsoneditor-field {
-  @apply !border-none !text-default hover:!bg-base-100 dark:bg-transparent dark:hover:!bg-base-800;
+  @apply !border-none !text-default hover:!bg-base-100 dark:bg-base-900 dark:hover:!bg-base-800;
 }
 
 .jsoneditor .jsoneditor-value {

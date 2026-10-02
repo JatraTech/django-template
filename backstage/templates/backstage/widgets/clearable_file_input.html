@@ -2,8 +2,8 @@
 
 {% if widget.attrs.accept == 'image/*' and widget.is_initial %}
  <div class="mb-4 max-w-48">
- <a href="{{ widget.value.url }}" target="_blank">
- <img src="{{ widget.value.url }}" alt="{% trans 'Image preview' %}" class="block rounded-default" />
+ <a href="{{ widget.value.url }}" target="_blank" class="backstage-image-preview">
+ <img src="{{ widget.value.url }}" alt="{% trans 'Image preview' %}" />
  </a>
  </div>
 {% endif %}

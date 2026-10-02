@@ -37,6 +37,9 @@ Machine-readable key list: [config-keys.yaml](config-keys.yaml) (keep in sync wi
 | `NAV_GROUPS` | dict | Sidebar groups → app labels |
 | `MODEL_ICONS` | dict | Lowercase model name → Material icon |
 | `MODEL_LABELS` | dict | Lowercase model name → nav label |
+| `INLINE_RELATIONS` | list | Parent→child relation dicts compiled into inlines (see below) |
+| `INLINE_HUB` | dict | Legacy hub config; prefer `INLINE_RELATIONS` |
+| `STANDALONE_CHILD_MODELS` | list | Usually auto-filled by `INLINE_RELATIONS` compiler |
 | `PREVIEW_ROUTE_CALLBACK` | str | Import path `(obj) -> path or None` |
 | `ADMIN_OVERRIDES` | dict | Model class name → ModelAdmin attrs |
 | `FIELD_EDITOR_META` | dict | Model → field → `label` / `help_text` |
@@ -58,8 +61,8 @@ Machine-readable key list: [config-keys.yaml](config-keys.yaml) (keep in sync wi
 | Key | Purpose |
 |-----|---------|
 | `enabled` | Default `true`. When `false`, admin home uses legacy `admin/index.html` (model list + recent actions). |
-| `layout` | Ordered widget ids: `welcome`, `stats`, `quick_actions`, `my_drafts`, `recent_activity` |
-| `welcome` | Optional `{title, body}` overrides (defaults use `SITE_HEADER` / generic body) |
+| `layout` | Ordered widget ids: `welcome`, `stats`, `quick_actions`, `charts`, `my_drafts`, `recent_activity` |
+| `welcome` | Optional `{title, body, links}` — title defaults to resolved site header; `links` are shortcuts (`model`, `action`, `url_key`, …) |
 | `stats` | List of stat cards (`model`, `filter`, `count_callback`, `link`, `icon`, `accent`, …) |
 | `quick_actions` | List of shortcuts (`model`, `action`: `add` \| `changelist` \| `change`, `singleton`) |
 | `my_drafts` | `{limit}` — draft copies from `DRAFT_PUBLISH.models` |
@@ -77,6 +80,22 @@ Default layout when unset: `welcome`, `recent_activity` only.
 | `show_search` | bool | Sidebar search |
 | `show_all_applications` | bool | All apps link |
 
+### `INLINE_RELATIONS` entry keys
+
+Each entry is a dict. Required: `parent`, `child` (model class names). Common optional keys:
+
+| Key | Purpose |
+|-----|---------|
+| `mode` | `default_stacked`, `default_tabular`, `hub_tabular`, or `hub_stacked` |
+| `fk` | FK field name on child when ambiguous |
+| `fields`, `ordering` | Hub/tabular column config |
+| `standalone_child` | Allow child changelist outside parent |
+| `primary_tab_slug` | Slug of parent fieldset tab where hub inline is anchored (merged tab bar) |
+| `help_text`, `add_label`, `changelist_label` | Hub inline copy |
+| `inline_class` | Dotted path escape hatch for custom inline class |
+
+Legacy `INLINE_HUB` + manual `ADMIN_OVERRIDES.inlines` still work; prefer `INLINE_RELATIONS` for new hosts.
+
 ## `conf.py` accessors
 
 | Function | `BACKSTAGE` key |
@@ -92,11 +111,13 @@ Default layout when unset: `welcome`, `recent_activity` only.
 
 ## Resolution order (branding & preview URL)
 
-| Concern | 1 | 2 | 3 |
-|---------|---|---|---|
-| Site title, accent, logos, theme | `BackstageSettings` (DB) | `BACKSTAGE` | `defaults.py` / env |
-| Public / preview base URL | DB `frontend_url` | `BACKSTAGE["SITE_URL"]` | `FRONTEND_URL` env |
-| API docs link | `BACKSTAGE["API_DOCS_URL"]` | `BACKEND_URL` env | — |
+| Concern | Behavior |
+|---------|----------|
+| Site title, header, subheader (admin UI) | **DB only** via `resolve_branding_field` / `resolve_text` once `BackstageSettings` exists. Cleared fields stay empty; `BACKSTAGE` SITE_* are **not** live fallbacks for display. |
+| Seeding DB text | On **create**, `ensure_backstage_settings()` copies non-empty `BACKSTAGE` SITE_* into the row. Existing rows: run `migrate backstage` so `0002_backfill_branding_from_config` fills empty title/header/subheader once from settings (skipped if any of those are already set). |
+| Accent, logos, theme, fonts | `BackstageSettings` (DB) → `BACKSTAGE` → package defaults |
+| Public / preview base URL | DB `frontend_url` → `BACKSTAGE["SITE_URL"]` → `FRONTEND_URL` env |
+| API docs link | `BACKSTAGE["API_DOCS_URL"]` → `BACKEND_URL` env |
 
 Configure live values under **System → Admin appearance** (model `BackstageSettings`).
 

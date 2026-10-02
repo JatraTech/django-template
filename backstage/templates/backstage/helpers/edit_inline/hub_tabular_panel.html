@@ -1,0 +1,15 @@
+{% load i18n %}
+
+<div id="{{ inline_admin_formset.formset.prefix }}-group" data-inline-type="tabular" class="min-w-0" aria-labelledby="{{ inline_admin_formset.formset.prefix }}-heading">
+ {% if inline_admin_formset.opts.template_before %}
+ {% include inline_admin_formset.opts.template_before %}
+ {% endif %}
+
+ {% include "backstage/helpers/edit_inline/hub_inline_help.html" with hub_integrated=True %}
+
+ {% include "backstage/helpers/edit_inline/tabular_table.html" with hub_integrated=True %}
+
+ {% if inline_admin_formset.opts.template_after %}
+ {% include inline_admin_formset.opts.template_after %}
+ {% endif %}
+</div>

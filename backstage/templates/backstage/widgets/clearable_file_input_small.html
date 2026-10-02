@@ -36,13 +36,8 @@
  </div>
 
  {% if widget.attrs.accept == 'image/*' and widget.is_initial %}
- <div class="h-[38px] ml-3 relative w-[38px]">
- <div class="absolute border flex font-medium h-full items-center left-0 rounded-default justify-center text-base-400 top-0 w-full z-10 dark:bg-base-900 dark:border-border dark:text-base-500">
- ?
- </div>
-
- <a href="{{ widget.value.url }}" target="_blank" class="bg-center bg-cover bg-no-repeat block h-[38px] overflow-hidden relative rounded-default w-[38px] z-20" style="background-image: url('{{ widget.value.url }}')">
+ <a href="{{ widget.value.url }}" target="_blank" class="backstage-image-preview backstage-image-preview--thumb ml-3 shrink-0">
+ <img src="{{ widget.value.url }}" alt="{% trans 'Image preview' %}" />
  </a>
- </div>
  {% endif %}
 </div>

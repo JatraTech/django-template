@@ -22,19 +22,31 @@ def _backstage_value(key: str) -> Any:
     return get_config("BACKSTAGE").get(key)
 
 
-def resolve_text(db_attr: str, backstage_key: str) -> str:
-    settings_obj = get_backstage_settings_or_none()
-    if settings_obj is not None:
-        db_value = getattr(settings_obj, db_attr, None)
-        if _is_nonempty(db_value):
-            return str(db_value)
-
+def _resolve_text_fallback(backstage_key: str) -> str:
     config_value = _backstage_value(backstage_key)
     if _is_nonempty(config_value) and not isinstance(config_value, dict):
         return str(config_value)
 
     default = BRANDING_DEFAULTS.get(backstage_key, "")
     return str(default) if default is not None else ""
+
+
+def resolve_branding_field(db_attr: str, backstage_key: str) -> str:
+    """When Admin appearance exists, DB is authoritative (empty means hidden)."""
+    settings_obj = get_backstage_settings_or_none()
+    if settings_obj is not None:
+        db_value = getattr(settings_obj, db_attr, None)
+        return str(db_value) if db_value is not None else ""
+
+    return _resolve_text_fallback(backstage_key)
+
+
+def resolve_text(db_attr: str, backstage_key: str) -> str:
+    return resolve_branding_field(db_attr, backstage_key)
+
+
+def resolve_sidebar_text(db_attr: str, backstage_key: str) -> str:
+    return resolve_branding_field(db_attr, backstage_key)
 
 
 def resolve_site_url() -> str:

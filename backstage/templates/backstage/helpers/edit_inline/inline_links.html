@@ -3,8 +3,21 @@
 {% if inline_admin_form.original %}
  <span class="ml-2 font-normal leading-none text-xs text-primary-600 dark:text-primary-500 group-hover/title:block hidden">
  {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
- <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="align-middle">
+ <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="align-middle inline-flex items-center gap-1">
+ {% if inline_admin_formset.opts.inline_mode == "hub" %}
+ <span class="material-symbols-outlined text-base leading-none" aria-hidden="true">edit_square</span>
+ {% trans "Edit" %}
+ {% else %}
  {% trans "Change" %}
+ {% endif %}
+ </a>
+ {% endif %}
+
+ {% if inline_admin_formset.opts.inline_mode == "hub" and inline_admin_form.model_admin.has_registered_model %}
+ <span class="align-middle bg-base-300 inline-block h-3 mx-1.5 w-px dark:bg-base-700"></span>
+ <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'delete' inline_admin_form.original.pk|admin_urlquote %}" class="align-middle inline-flex items-center gap-1 text-red-600 dark:text-red-500">
+ <span class="material-symbols-outlined text-base leading-none" aria-hidden="true">delete</span>
+ {% trans "Delete" %}
  </a>
  {% endif %}
 

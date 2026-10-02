@@ -1,0 +1,9 @@
+<div class="relative w-full{% if class %} {{ class }}{% endif %}">
+ <canvas
+  class="chart"
+  data-type="{% if chart_type %}{{ chart_type }}{% else %}doughnut{% endif %}"
+  data-value='{{ data }}'
+  {% if options %}data-options='{{ options }}'{% else %}data-options='{"cutout":"62%","plugins":{"legend":{"display":false}}}'{% endif %}
+  {% if width %}width="{{ width }}"{% endif %}
+  {% if height %}height="{{ height }}"{% endif %}></canvas>
+</div>

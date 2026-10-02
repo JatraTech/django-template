@@ -2,29 +2,29 @@
 
 {% if not theme %}
  <div class="relative" x-data="{ openTheme: false }">
- <a class="block cursor-pointer h-[18px] leading-none hover:text-base-700 dark:hover:text-base-200" x-on:click="openTheme = !openTheme">
+ <a class="{% if theme_trigger_class %}{{ theme_trigger_class }}{% else %}block cursor-pointer h-[18px] leading-none hover:text-base-700 dark:hover:text-base-200{% endif %}" x-on:click="openTheme = !openTheme" role="button" aria-haspopup="menu" x-bind:aria-expanded="openTheme" aria-label="{% trans 'Theme' %}">
  <span class="material-symbols-outlined">
  <span x-text="adminTheme == 'dark' && 'dark_mode' || adminTheme == 'light' && 'light_mode' || 'computer'"></span>
  </span>
  </a>
 
- <nav class="absolute bg-white border border-border flex flex-col leading-none py-1 -right-2 rounded-default top-7 w-40 z-50 dark:bg-base-800 dark:border-border" x-cloak x-show="openTheme" x-transition x-on:click.outside="openTheme = false">
- <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200"
- x-on:click="adminTheme = 'light'"
+ <nav class="absolute bg-white border border-border flex flex-col leading-none py-1 rounded-default w-40 z-50 dark:bg-base-800 dark:border-border {% if theme_menu_nav_class %}{{ theme_menu_nav_class }}{% else %}-right-2 top-7{% endif %}" x-cloak x-show="openTheme" x-transition x-on:click.outside="openTheme = false" role="menu">
+ <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200" role="menuitem"
+ x-on:click="switchTheme('light'); openTheme = false"
  x-bind:class="adminTheme == 'light' && 'text-primary-600 dark:text-primary-500 dark:hover:text-primary-500! hover:text-primary-600!'">
  <span class="material-symbols-outlined mr-2">light_mode</span>
  <span class="leading-none self-center">{% trans "Light" %}</span>
  </a>
 
- <a class="cursor-pointer flex flex-row leading-none mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200"
- x-on:click="adminTheme = 'dark'"
+ <a class="cursor-pointer flex flex-row leading-none mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200" role="menuitem"
+ x-on:click="switchTheme('dark'); openTheme = false"
  x-bind:class="adminTheme == 'dark' && 'text-primary-600 dark:text-primary-500 dark:hover:text-primary-500! hover:text-primary-600!'">
  <span class="material-symbols-outlined mr-2">dark_mode</span>
  <span class="leading-none self-center">{% trans "Dark" %}</span>
  </a>
 
- <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200"
- x-on:click="adminTheme = 'auto'"
+ <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded-default hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200" role="menuitem"
+ x-on:click="switchTheme('auto'); openTheme = false"
  x-bind:class="adminTheme == 'auto' && 'text-primary-600 dark:text-primary-500 dark:hover:text-primary-500! hover:text-primary-600!'">
  <span class="material-symbols-outlined mr-2">computer</span>
  <span class="leading-none self-center">{% trans "System" %}</span>

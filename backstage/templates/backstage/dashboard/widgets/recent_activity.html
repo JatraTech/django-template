@@ -1,6 +1,6 @@
 {% load i18n humanize %}
 
-<div class="backstage-dashboard-module backstage-surface-card">
+<div class="backstage-dashboard-module backstage-dashboard-module--activity-stretch backstage-surface-card">
  <div class="backstage-dashboard-module__header">
   <span class="material-symbols-outlined backstage-dashboard-module__header-icon" aria-hidden="true">schedule</span>
   {% trans "Recent activity" %}
@@ -14,13 +14,13 @@
     <div class="backstage-activity-item__content">
      <div class="backstage-activity-item__title">
       {% if entry.admin_url %}
-      <a href="{{ entry.admin_url }}" class="backstage-activity-item__link">{{ entry.object_repr }}</a>
+      <a href="{{ entry.admin_url }}" class="backstage-activity-item__link">{{ entry.title }}</a>
       {% else %}
-      {{ entry.object_repr }}
+      {{ entry.title }}
       {% endif %}
      </div>
      <div class="backstage-activity-item__meta">
-      {% if entry.content_type_name %}{{ entry.content_type_name }} · {% endif %}
+      {% if entry.context_label %}{{ entry.context_label }} · {% endif %}
       <time datetime="{{ entry.action_time|date:'c' }}" title="{{ entry.action_time }}">{% blocktranslate with time=entry.action_time|timesince %}{{ time }} ago{% endblocktranslate %}</time>
      </div>
     </div>

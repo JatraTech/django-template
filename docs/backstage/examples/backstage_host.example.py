@@ -50,7 +50,23 @@ MODEL_ICONS = {
     "backstagesettings": "palette",
 }
 
-MODEL_LABELS: dict[str, str] = {}
+MODEL_LABELS: dict[str, str] = {
+    "group": _("Groups"),
+    "user": _("Users"),
+}
+
+# Optional: compile parent→child inlines from config (see integration.md)
+INLINE_RELATIONS: list[dict[str, Any]] = [
+    # {
+    #     "parent": "PressReleasesPage",
+    #     "child": "PressRelease",
+    #     "mode": "hub_tabular",
+    #     "fk": "press_page",
+    #     "primary_tab_slug": "press",
+    #     "fields": ("date", "title"),
+    #     "standalone_child": True,
+    # },
+]
 
 # --- Dashboard (optional; see configuration.md) ---
 

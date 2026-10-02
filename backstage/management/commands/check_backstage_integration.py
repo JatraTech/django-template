@@ -67,6 +67,8 @@ class Command(BaseCommand):
         warnings.extend(self._hide_title_warnings())
         warnings.extend(self._dashboard_config_warnings())
         warnings.extend(self._host_package_import_warnings())
+        warnings.extend(self._inline_hub_config_warnings())
+        warnings.extend(self._inline_relations_config_warnings())
 
         for message in warnings:
             self.stdout.write(self.style.WARNING(f"Warning: {message}"))
@@ -270,6 +272,71 @@ class Command(BaseCommand):
                 candidates.append(module)
         return candidates
 
+    def _inline_hub_config_warnings(self) -> list[str]:
+        from django.contrib import admin
+
+        configured = get_config().get("INLINE_HUB") or {}
+        if not configured:
+            return []
+
+        def model_by_name(name: str):
+            for model in admin.site._registry:
+                if model.__name__ == name:
+                    return model
+            return None
+
+        standalone = {str(n).split(".")[-1] for n in (get_config().get("STANDALONE_CHILD_MODELS") or [])}
+        warnings: list[str] = []
+
+        for parent_name, children in configured.items():
+            parent = model_by_name(str(parent_name))
+            if parent is None:
+                warnings.append(f'INLINE_HUB: unknown parent model "{parent_name}" (not registered on admin site).')
+                continue
+            if not isinstance(children, dict):
+                continue
+            for child_name in children:
+                child = model_by_name(str(child_name))
+                if child is None:
+                    warnings.append(
+                        f'INLINE_HUB: unknown child model "{child_name}" under "{parent_name}".',
+                    )
+                    continue
+                if child.__name__ not in standalone:
+                    warnings.append(
+                        f'INLINE_HUB: "{parent_name}" → "{child_name}" — add "{child.__name__}" to '
+                        "STANDALONE_CHILD_MODELS if the child should have its own changelist outside the hub.",
+                    )
+        return warnings
+
+    def _inline_relations_config_warnings(self) -> list[str]:
+        from backstage.registry.relations import validate_relation_entry
+
+        warnings: list[str] = []
+        relations = get_config().get("INLINE_RELATIONS") or []
+        inline_hub = get_config().get("INLINE_HUB") or {}
+        relation_keys = set()
+        for entry in relations:
+            if not isinstance(entry, dict):
+                warnings.append("INLINE_RELATIONS: entry must be a dict.")
+                continue
+            warnings.extend(validate_relation_entry(entry))
+            parent = entry.get("parent")
+            child = entry.get("child")
+            if parent and child:
+                relation_keys.add((str(parent), str(child)))
+        for parent_name, children in inline_hub.items():
+            if not isinstance(children, dict):
+                continue
+            for child_name in children:
+                key = (str(parent_name), str(child_name))
+                if key in relation_keys:
+                    warnings.append(
+                        f'INLINE_HUB and INLINE_RELATIONS both define "{parent_name}" → "{child_name}"; '
+                        "use INLINE_RELATIONS only.",
+                    )
+        return warnings
+
     def _dashboard_config_warnings(self) -> list[str]:
         config = get_config().get("DASHBOARD") or {}
         if not config.get("enabled", True):
@@ -278,9 +345,9 @@ class Command(BaseCommand):
         if not layout:
             return [
                 'BACKSTAGE["DASHBOARD"] is enabled but layout is empty — '
-                "add widget ids (welcome, stats, quick_actions, my_drafts, recent_activity)."
+                "add widget ids (welcome, stats, quick_actions, my_drafts, recent_activity, charts)."
             ]
-        known = {"welcome", "stats", "quick_actions", "my_drafts", "recent_activity"}
+        known = {"welcome", "stats", "quick_actions", "my_drafts", "recent_activity", "charts"}
         unknown = [wid for wid in layout if wid not in known]
         if unknown:
             return [f"BACKSTAGE DASHBOARD layout contains unknown widget id(s): {', '.join(unknown)}."]

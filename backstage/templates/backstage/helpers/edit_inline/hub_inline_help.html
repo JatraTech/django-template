@@ -1,0 +1,5 @@
+{% if inline_admin_formset.opts.hub_help_text %}
+<div class="mb-3 rounded-default border border-border bg-base-50 px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-border dark:bg-white/[.02] {% if hub_integrated %}mx-3 mt-3{% endif %}">
+ {{ inline_admin_formset.opts.hub_help_text }}
+</div>
+{% endif %}

@@ -6,13 +6,13 @@
  {% if group.items %}
  {% has_nav_item_active group.items as has_active %}
 
- <div class="hidden mb-1.5 has-[ol]:has-[li]:block" {% if group.collapsible %}{% if sidebar_group_collapse == "open" %}x-data="{navigationOpen: true}"{% elif sidebar_group_collapse == "collapsed" %}x-data="{navigationOpen: false}"{% else %}x-data="{navigationOpen: Alpine.$persist({% if has_active %}true{% else %}false{% endif %}).as('backstage-nav-{{ group.id }}')}"{% endif %}{% endif %}>
+ <div class="hidden mb-1.5 has-[ol]:has-[li]:block" {% if group.collapsible %}{% if sidebar_group_collapse == "open" %}x-data="{navigationOpen: true}"{% elif sidebar_group_collapse == "collapsed" %}x-data="{navigationOpen: false}" x-init="{% if has_active %}navigationOpen = true{% endif %}"{% else %}x-data="{navigationOpen: Alpine.$persist(false).as('backstage-nav-{{ group.id }}')}" x-init="{% if has_active %}navigationOpen = true{% endif %}"{% endif %}{% endif %}>
  {% if group.separator %}
  <hr class="border-t border-border mx-3 my-2 dark:border-border" />
  {% endif %}
 
  {% if group.title %}
- <h2 class="{% nav_group_title_classes %} flex flex-row group items-center {% if group.collapsible and sidebar_group_collapse == "dynamic" %}cursor-pointer hover:text-foreground{% endif %}" {% if group.collapsible and sidebar_group_collapse == "dynamic" %}x-on:click="navigationOpen = !navigationOpen"{% endif %}>
+ <h2 class="{% nav_group_title_classes %} flex flex-row group items-center {% if group.collapsible and sidebar_group_collapse != "open" %}cursor-pointer hover:text-foreground{% endif %}" {% if group.collapsible and sidebar_group_collapse != "open" %}x-on:click="navigationOpen = !navigationOpen"{% endif %}>
  {{ group.title }}
 
  {% include "backstage/helpers/app_list_badge.html" with item=group %}

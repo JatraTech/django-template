@@ -534,9 +534,9 @@ class BackstageAdminSite(AdminSite):
         if key == "SITE_TITLE":
             return branding.resolve_text("site_title", "SITE_TITLE")
         if key == "SITE_HEADER":
-            return branding.resolve_text("site_header", "SITE_HEADER")
+            return branding.resolve_sidebar_text("site_header", "SITE_HEADER")
         if key == "SITE_SUBHEADER":
-            return branding.resolve_text("site_subheader", "SITE_SUBHEADER")
+            return branding.resolve_sidebar_text("site_subheader", "SITE_SUBHEADER")
         if key == "SITE_URL":
             return branding.resolve_site_url()
         if key == "SITE_LOGO":

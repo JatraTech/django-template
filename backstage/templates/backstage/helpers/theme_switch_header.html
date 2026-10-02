@@ -1,0 +1,5 @@
+{% if not theme %}
+ <div class="flex items-center shrink-0">
+  {% include "backstage/helpers/theme_switch_dropdown.html" with theme_trigger_class="flex items-center justify-center h-9 w-9 rounded-default border border-border cursor-pointer text-font-default-light hover:bg-base-100 hover:text-base-700 dark:border-border dark:text-font-default-dark dark:hover:bg-base-800 dark:hover:text-base-200" theme_menu_nav_class="right-0 top-full mt-1.5" %}
+ </div>
+{% endif %}

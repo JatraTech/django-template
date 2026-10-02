@@ -1,0 +1,34 @@
+{% load i18n %}
+
+{% if charts %}
+<div class="backstage-dashboard-charts">
+ {% for chart in charts %}
+ <div class="backstage-dashboard-module backstage-surface-card backstage-dashboard-chart backstage-dashboard-chart--minimal">
+  <div class="backstage-dashboard-module__header">
+   <span class="material-symbols-outlined backstage-dashboard-module__header-icon" aria-hidden="true">pie_chart</span>
+   {{ chart.title }}
+  </div>
+  <div class="backstage-dashboard-module__body backstage-dashboard-chart__body">
+   <div class="backstage-dashboard-chart__canvas-wrap">
+    {% include "backstage/components/chart/doughnut.html" with data=chart.data_json chart_type=chart.type height=chart.height options='{"cutout":"78%","spacing":3,"borderRadius":6,"plugins":{"legend":{"display":false},"tooltip":{"enabled":true}}}' %}
+    <div class="backstage-dashboard-chart__center" aria-hidden="true">
+     <span class="backstage-dashboard-chart__center-value">{{ chart.total }}</span>
+     <span class="backstage-dashboard-chart__center-label">{% trans "Total" %}</span>
+    </div>
+   </div>
+   {% if chart.legend %}
+   <ul class="backstage-dashboard-chart__legend" aria-label="{% trans 'Chart legend' %}">
+    {% for item in chart.legend %}
+    <li class="backstage-dashboard-chart__legend-item" data-accent="{{ item.accent|default:'blue' }}">
+     <span class="backstage-dashboard-chart__legend-swatch" aria-hidden="true"></span>
+     <span class="backstage-dashboard-chart__legend-label">{{ item.label }}</span>
+     <span class="backstage-dashboard-chart__legend-value">{{ item.count }}</span>
+    </li>
+    {% endfor %}
+   </ul>
+   {% endif %}
+  </div>
+ </div>
+ {% endfor %}
+</div>
+{% endif %}

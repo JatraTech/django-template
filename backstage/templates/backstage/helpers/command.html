@@ -1,12 +1,13 @@
 {% load i18n %}
 
 {% if request.user.is_staff %}
- <div x-data="searchCommand()" x-show="openCommandResults" x-cloak x-on:opencommand.window="handleOpen()" x-on:keydown.window="handleShortcut($event)">
- <div class="backdrop-blur-xs bg-base-900/20 bottom-0 fixed left-0 right-0 top-0 z-60 dark:bg-base-900/80"></div>
+ <template x-teleport="body">
+ <div x-data="searchCommand()" x-on:opencommand.window="handleOpen()" x-on:keydown.window="handleShortcut($event)">
+ <div class="fixed inset-0 z-[1000] flex flex-col items-center justify-start p-4 lg:p-32" x-show="openCommandResults" x-cloak x-trap.noscroll="openCommandResults">
+ <div class="absolute inset-0 backdrop-blur-xs bg-base-900/20 dark:bg-base-900/80" x-on:click="handleOutsideClick()"></div>
 
- <div class="flex flex-col fixed inset-0 p-4 lg:p-32 z-[1000]" x-trap.noscroll="openCommandResults">
- <div class="bg-base-50 dark:bg-base-800 flex flex-col max-w-3xl min-h-0 mx-auto overflow-hidden rounded-default w-full" x-on:click.outside="handleOutsideClick()">
- <div class="flex flex-row items-center px-4 w-full">
+ <div class="backstage-command-palette relative z-10 shrink-0 bg-card dark:bg-base-800 border border-border shadow-lg dark:border-base-600 flex flex-col max-w-3xl min-h-0 mx-auto overflow-hidden rounded-default w-full" x-on:click.outside="handleOutsideClick()">
+ <div class="border-b border-border dark:border-border flex flex-row items-center px-4 w-full">
  <button type="submit" id="command-submit" class="group flex items-center focus:outline-hidden">
  <span class="block material-symbols-outlined text-xl text-base-400 dark:text-base-500 group-[.htmx-request]:hidden">
  search
@@ -21,7 +22,7 @@
  autocomplete="off"
  type="search"
  placeholder="{% trans "Type to search" %}"
- class="[&::-webkit-search-cancel-button]:hidden font-medium grow px-2 py-4 placeholder-text-subtle text-important focus:outline-hidden"
+ class="[&::-webkit-search-cancel-button]:hidden appearance-none bg-transparent font-medium grow px-2 py-4 placeholder-text-subtle text-important focus:outline-hidden"
  name="s"
  id="search-input-command"
  x-ref="searchInputCommand"
@@ -45,7 +46,7 @@
  </span>
  </div>
 
- <div class="bg-white border border-b-0 border-border flex flex-col grow -mx-px min-h-0 rounded-default dark:border-border dark:bg-white/[.04]">
+ <div class="border border-b-0 border-border flex flex-col grow -mx-px min-h-0 rounded-default dark:border-border">
  <div class="grow h-full overflow-y-auto scrollbar-default" x-on:htmx:after-swap="handleContentLoaded($event)">
  <div id="command-results"></div>
 
@@ -59,4 +60,5 @@
  </div>
  </div>
  </div>
+ </template>
 {% endif %}

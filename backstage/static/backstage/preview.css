@@ -54,11 +54,11 @@ body.backstage-preview-expanded {
   gap: 0.5rem;
   min-width: 0;
   padding: 0.4rem 0.65rem;
-  background: rgb(var(--color-base-100) / 0.45);
+  background: color-mix(in oklab, var(--color-base-100) 45%, transparent);
 }
 
 .dark .backstage-preview-chrome {
-  background: rgb(var(--color-base-900) / 0.45);
+  background: color-mix(in oklab, var(--color-base-900) 45%, transparent);
 }
 
 .backstage-preview-chrome-dots {
@@ -72,7 +72,7 @@ body.backstage-preview-expanded {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 999px;
-  background: rgb(var(--color-base-400) / 0.55);
+  background: color-mix(in oklab, var(--color-base-400) 55%, transparent);
 }
 
 .backstage-preview-chrome-dots span:nth-child(1) {
@@ -99,23 +99,23 @@ body.backstage-preview-expanded {
 .backstage-preview-chrome-labels .backstage-preview-note::before {
   content: "·";
   margin-right: 0.35rem;
-  color: rgb(var(--color-base-400) / 1);
+  color: var(--color-base-400);
 }
 
 .backstage-preview-title {
   font-weight: 600;
   font-size: 0.75rem;
-  color: rgb(var(--color-base-900) / 1);
+  color: var(--color-base-900);
   white-space: nowrap;
 }
 
 .dark .backstage-preview-title {
-  color: rgb(var(--color-base-100) / 1);
+  color: var(--color-base-100);
 }
 
 .backstage-preview-note {
   font-size: 0.75rem;
-  color: rgb(var(--color-base-500) / 1);
+  color: var(--color-base-500);
   white-space: nowrap;
 }
 
@@ -138,7 +138,7 @@ body.backstage-preview-expanded {
   border-radius: calc(var(--border-radius, 8px) - 2px);
   border: 1px solid transparent;
   background: transparent;
-  color: rgb(var(--color-base-600) / 1);
+  color: var(--color-base-600);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -162,7 +162,7 @@ body.backstage-preview-expanded {
 
 .dark .backstage-preview-btn {
   background: transparent;
-  color: rgb(var(--color-base-300) / 1);
+  color: var(--color-base-300);
 }
 
 .backstage-preview-btn:hover,
@@ -202,11 +202,11 @@ body.backstage-preview-expanded {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius, 8px);
-  background: rgb(var(--color-base-100) / 0.5);
+  background: color-mix(in oklab, var(--color-base-100) 50%, transparent);
 }
 
 .dark .backstage-preview-frame-wrap.is-desktop {
-  background: rgb(var(--color-base-950) / 0.5);
+  background: color-mix(in oklab, var(--color-base-950) 50%, transparent);
 }
 
 .backstage-preview-frame-wrap.is-desktop .backstage-preview-scaler {
@@ -232,11 +232,11 @@ body.backstage-preview-expanded {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius, 8px);
-  background: rgb(var(--color-base-100) / 0.5);
+  background: color-mix(in oklab, var(--color-base-100) 50%, transparent);
 }
 
 .dark .backstage-preview-frame-wrap.is-tablet {
-  background: rgb(var(--color-base-950) / 0.5);
+  background: color-mix(in oklab, var(--color-base-950) 50%, transparent);
 }
 
 .backstage-preview-frame-wrap.is-tablet .backstage-preview-scaler {
@@ -262,11 +262,11 @@ body.backstage-preview-expanded {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius, 8px);
-  background: rgb(var(--color-base-100) / 0.5);
+  background: color-mix(in oklab, var(--color-base-100) 50%, transparent);
 }
 
 .dark .backstage-preview-frame-wrap.is-mobile {
-  background: rgb(var(--color-base-950) / 0.5);
+  background: color-mix(in oklab, var(--color-base-950) 50%, transparent);
 }
 
 .backstage-preview-frame-wrap.is-mobile .backstage-preview-scaler {
@@ -292,11 +292,11 @@ body.backstage-preview-expanded {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--border-radius, 8px);
-  background: rgb(var(--color-base-100) / 0.5);
+  background: color-mix(in oklab, var(--color-base-100) 50%, transparent);
 }
 
 .dark .backstage-preview-frame-wrap.is-responsive {
-  background: rgb(var(--color-base-950) / 0.5);
+  background: color-mix(in oklab, var(--color-base-950) 50%, transparent);
 }
 
 .backstage-preview-frame-wrap.is-responsive .backstage-preview-scaler {
@@ -319,14 +319,14 @@ body.backstage-preview-expanded {
   border: 1px solid var(--border);
   border-radius: calc(var(--border-radius, 8px) - 2px);
   background: var(--card, rgb(255 255 255));
-  color: rgb(var(--color-base-600) / 1);
+  color: var(--color-base-600);
   pointer-events: none;
   white-space: nowrap;
 }
 
 .dark .backstage-preview-size-label {
-  background: rgb(var(--color-base-900) / 1);
-  color: rgb(var(--color-base-300) / 1);
+  background: var(--card);
+  color: var(--color-base-300);
 }
 
 .backstage-preview-frame-wrap:not(.is-responsive) .backstage-preview-size-label,
@@ -383,11 +383,11 @@ body.backstage-preview-resizing {
   inset: 0;
   z-index: 60;
   backdrop-filter: blur(2px);
-  background: rgb(var(--color-base-900) / 0.2);
+  background: color-mix(in oklab, var(--color-base-900) 20%, transparent);
 }
 
 .dark .backstage-preview-overlay-backdrop {
-  background: rgb(var(--color-base-900) / 0.8);
+  background: color-mix(in oklab, var(--color-base-900) 80%, transparent);
 }
 
 .backstage-preview-overlay-panel {
@@ -411,7 +411,29 @@ body.backstage-preview-resizing {
 }
 
 .dark .backstage-preview-overlay-panel {
-  background: rgb(var(--color-base-900) / 1);
+  background: var(--card);
+}
+
+/* Expanded preview — solid surfaces in dark mode (no frosted glass) */
+.dark body.backstage-preview-expanded .backstage-preview-overlay-backdrop {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-base-950);
+}
+
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-chrome {
+  background: var(--color-base-900);
+}
+
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-frame-host {
+  background: var(--color-base-900);
+}
+
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-frame-wrap.is-desktop,
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-frame-wrap.is-tablet,
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-frame-wrap.is-mobile,
+.dark body.backstage-preview-expanded .backstage-preview-overlay-panel .backstage-preview-frame-wrap.is-responsive {
+  background: var(--color-base-800);
 }
 
 .backstage-preview-overlay-panel .backstage-preview-frame-host {

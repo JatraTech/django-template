@@ -1,7 +1,7 @@
 {% load i18n backstage %}
 
 {% if cl.model_admin.list_filter_submit or cl.is_facets_optional or cl.has_active_filters %}
- <div class="backstage-footer-bar border-t border-border bg-white flex flex-col lg:flex-row flex-wrap items-center justify-end gap-3 px-3 dark:bg-base-800 dark:border-border {% if not cl.model_admin.list_filter_sheet %}2xl:min-h-0 2xl:pb-0 2xl:py-0 2xl:border-t-0! 2xl:bg-transparent! 2xl:px-0{% endif %}">
+ <div class="backstage-footer-bar border-t border-border bg-white flex flex-col lg:flex-row flex-wrap items-center justify-end gap-3 px-3 dark:bg-base-800 dark:border-border {% if not cl.model_admin.list_filter_sheet %}2xl:min-h-0 2xl:pb-0 2xl:py-0 2xl:border-t-0! 2xl:bg-transparent! 2xl:dark:!bg-base-800 2xl:px-0{% endif %}">
  {% if cl.model_admin.list_filter_submit %}
  {% component "backstage/components/button.html" with submit=1 size="sm" %}
  {% trans "Apply Filters" %}

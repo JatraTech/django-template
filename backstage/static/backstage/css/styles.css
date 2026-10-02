@@ -3683,15 +3683,6 @@
   .h-\[20px\] {
     height: 20px;
   }
-  .h-\[26px\] {
-    height: 26px;
-  }
-  .h-\[30px\] {
-    height: 30px;
-  }
-  .h-\[34px\] {
-    height: 34px;
-  }
   .h-\[38px\] {
     height: 38px;
   }
@@ -3908,15 +3899,6 @@
   .w-\[18px\] {
     width: 18px;
   }
-  .w-\[26px\] {
-    width: 26px;
-  }
-  .w-\[30px\] {
-    width: 30px;
-  }
-  .w-\[34px\] {
-    width: 34px;
-  }
   .w-\[38px\] {
     width: 38px;
   }
@@ -4028,23 +4010,14 @@
   .min-w-56 {
     min-width: calc(var(--spacing) * 56);
   }
+  .min-w-\[10\.5rem\] {
+    min-width: 10.5rem;
+  }
   .min-w-\[18px\] {
     min-width: 18px;
   }
   .min-w-\[20px\] {
     min-width: 20px;
-  }
-  .min-w-\[26px\] {
-    min-width: 26px;
-  }
-  .min-w-\[30px\] {
-    min-width: 30px;
-  }
-  .min-w-\[34px\] {
-    min-width: 34px;
-  }
-  .min-w-\[38px\] {
-    min-width: 38px;
   }
   .flex-1 {
     flex: 1;
@@ -4267,6 +4240,9 @@
   }
   .flex-row {
     flex-direction: row;
+  }
+  .flex-nowrap {
+    flex-wrap: nowrap;
   }
   .flex-wrap {
     flex-wrap: wrap;
@@ -4737,6 +4713,12 @@
   }
   .\!bg-base-50 {
     background-color: var(--color-base-50) !important;
+  }
+  .\!bg-base-800 {
+    background-color: var(--color-base-800) !important;
+  }
+  .\!bg-base-900 {
+    background-color: var(--color-base-900) !important;
   }
   .\!bg-primary-50 {
     background-color: var(--color-primary-50) !important;
@@ -7476,10 +7458,6 @@
     content: var(--tw-content);
     position: absolute;
   }
-  .after\:inset-0::after {
-    content: var(--tw-content);
-    inset: 0px;
-  }
   .after\:top-1::after {
     content: var(--tw-content);
     top: var(--spacing);
@@ -7570,10 +7548,6 @@
     content: var(--tw-content);
     justify-content: center;
   }
-  .after\:rounded-default::after {
-    content: var(--tw-content);
-    border-radius: var(--border-radius, 6px);
-  }
   .after\:rounded-full::after {
     content: var(--tw-content);
     border-radius: calc(infinity * 1px);
@@ -7598,18 +7572,6 @@
   .after\:text-white::after {
     content: var(--tw-content);
     color: var(--color-white);
-  }
-  .after\:inset-ring::after {
-    content: var(--tw-content);
-    --tw-inset-ring-shadow: inset 0 0 0 1px var(--tw-inset-ring-color, currentcolor);
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-  .after\:inset-ring-base-800\/10::after {
-    content: var(--tw-content);
-    --tw-inset-ring-color: var(--color-base-800);
-    @supports (color: color-mix(in lab, red, red)) {
-      --tw-inset-ring-color: color-mix(in oklab, var(--color-base-800) 10%, transparent);
-    }
   }
   .after\:transition-all::after {
     content: var(--tw-content);
@@ -10826,6 +10788,18 @@
       border-top-style: var(--tw-border-style) !important;
       border-top-width: 0px !important;
     }
+    .\32 xl\:\!bg-base-800 {
+      background-color: var(--color-base-800) !important;
+    }
+    .\32 xl\:\!bg-base-900 {
+      background-color: var(--color-base-900) !important;
+    }
+    .\32 xl\:bg-base-800 {
+      background-color: var(--color-base-800);
+    }
+    .\32 xl\:bg-base-900 {
+      background-color: var(--color-base-900);
+    }
     .\32 xl\:bg-transparent {
       background-color: transparent;
     }
@@ -10998,6 +10972,12 @@
     }
     .dark\:border-r-base-700:where(.dark, .dark *) {
       border-right-color: var(--color-base-700);
+    }
+    .dark\:\!bg-base-800:where(.dark, .dark *) {
+      background-color: var(--color-base-800) !important;
+    }
+    .dark\:\!bg-base-900:where(.dark, .dark *) {
+      background-color: var(--color-base-900) !important;
     }
     .dark\:\!bg-white\/\[\.04\]:where(.dark, .dark *) {
       background-color: color-mix(in srgb, #fff 4%, transparent) !important;
@@ -11868,13 +11848,6 @@
       content: var(--tw-content);
       color: transparent;
     }
-    .dark\:after\:inset-ring-base-200\/10:where(.dark, .dark *)::after {
-      content: var(--tw-content);
-      --tw-inset-ring-color: var(--color-base-200);
-      @supports (color: color-mix(in lab, red, red)) {
-        --tw-inset-ring-color: color-mix(in oklab, var(--color-base-200) 10%, transparent);
-      }
-    }
     .dark\:checked\:border-primary-600:where(.dark, .dark *):checked {
       border-color: var(--color-primary-600);
     }
@@ -12044,9 +12017,6 @@
   }
   @media not print {
     @media (width >= 64rem) {
-      .dark\:lg\:\!bg-transparent:where(.dark, .dark *) {
-        background-color: transparent !important;
-      }
       .dark\:lg\:bg-transparent\!:where(.dark, .dark *) {
         background-color: transparent !important;
       }
@@ -12057,8 +12027,17 @@
       .\32 xl\:dark\:border-border:where(.dark, .dark *) {
         border-color: var(--border);
       }
-      .\32 xl\:dark\:bg-transparent\!:where(.dark, .dark *) {
-        background-color: transparent !important;
+      .\32 xl\:dark\:\!bg-base-800:where(.dark, .dark *) {
+        background-color: var(--color-base-800) !important;
+      }
+      .\32 xl\:dark\:\!bg-base-900:where(.dark, .dark *) {
+        background-color: var(--color-base-900) !important;
+      }
+      .\32 xl\:dark\:bg-base-800:where(.dark, .dark *) {
+        background-color: var(--color-base-800);
+      }
+      .\32 xl\:dark\:bg-base-900:where(.dark, .dark *) {
+        background-color: var(--color-base-900);
       }
     }
   }
@@ -14138,18 +14117,22 @@ div.jsoneditor-tree, .ace-jsoneditor .ace_scroller {
   background-color: var(--color-white);
   @media not print {
     &:where(.dark, .dark *) {
-      background-color: transparent !important;
+      background-color: var(--color-base-900);
     }
   }
 }
 .jsoneditor textarea.jsoneditor-text {
-  background-color: transparent !important;
+  background-color: transparent;
   padding: calc(var(--spacing) * 3);
   --tw-leading: var(--leading-relaxed);
   line-height: var(--leading-relaxed);
+  @media not print {
+    &:where(.dark, .dark *) {
+      background-color: var(--color-base-900);
+    }
+  }
 }
 .jsoneditor .jsoneditor-text, .jsoneditor .jsoneditor-tree {
-  background-color: transparent !important;
   color: var(--color-font-default-light) !important;
   @media not print {
     &:where(.dark, .dark *) {
@@ -14158,7 +14141,7 @@ div.jsoneditor-tree, .ace-jsoneditor .ace_scroller {
   }
   @media not print {
     &:where(.dark, .dark *) {
-      background-color: transparent !important;
+      background-color: var(--color-base-900);
     }
   }
 }
@@ -14186,7 +14169,7 @@ div.jsoneditor-tree, .ace-jsoneditor .ace_scroller {
   }
   @media not print {
     &:where(.dark, .dark *) {
-      background-color: transparent;
+      background-color: var(--color-base-900);
     }
   }
   @media not print {

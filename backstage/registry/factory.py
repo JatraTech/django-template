@@ -68,7 +68,15 @@ def _rich_text_fields(model: type[models.Model]) -> tuple[str, ...]:
 INLINE_ONLY_IGNORED_FK_NAMES = frozenset({"created_by", "updated_by"})
 
 
+def _is_standalone_child_model(model: type[models.Model]) -> bool:
+    standalone = get_config().get("STANDALONE_CHILD_MODELS") or []
+    names = {str(name).split(".")[-1] for name in standalone}
+    return model.__name__ in names
+
+
 def _is_inline_only_model(model: type[models.Model]) -> bool:
+    if _is_standalone_child_model(model):
+        return False
     foreign_keys = [
         field
         for field in model._meta.get_fields()
@@ -148,7 +156,7 @@ def _make_inline_admin(inline_model: type[models.Model], fk_name: str) -> type:
             "fk_name": fk_name,
             "extra": 0,
             "tab": True,
-            "verbose_name": tab_slug,
+            "verbose_name": inline_model._meta.verbose_name,
             "verbose_name_plural": inline_model._meta.verbose_name_plural,
             "fields": inline_fields or None,
             "rich_text_fields": rich_fields,
@@ -265,11 +273,46 @@ def _build_search_fields(model: type[models.Model]) -> list[str]:
     ][:5]
 
 
+def _normalize_excluded_field_names(exclude: Any) -> frozenset[str]:
+    if not exclude:
+        return frozenset()
+    if isinstance(exclude, str):
+        return frozenset({exclude})
+    return frozenset(str(name) for name in exclude)
+
+
+def _fieldsets_without_excluded(
+    fieldsets: tuple[tuple[str | None, dict[str, Any]], ...],
+    excluded: frozenset[str],
+) -> tuple[tuple[str | None, dict[str, Any]], ...]:
+    if not excluded:
+        return fieldsets
+    updated: list[tuple[str | None, dict[str, Any]]] = []
+    for title, options in fieldsets:
+        options = dict(options)
+        fields = options.get("fields")
+        if fields and isinstance(fields, (list, tuple)):
+            options["fields"] = tuple(name for name in fields if name not in excluded)
+        updated.append((title, options))
+    return tuple(updated)
+
+
 def _apply_admin_overrides(admin_class: type, model_name: str) -> type:
+    from django.utils.module_loading import import_string
+
+    from backstage.registry.inline_hub import finalize_parent_inlines
+
     overrides = get_config().get("ADMIN_OVERRIDES", {}).get(model_name, {})
     if overrides:
         for key, value in overrides.items():
+            if key == "inlines" and isinstance(value, list):
+                value = [import_string(item) if isinstance(item, str) else item for item in value]
             setattr(admin_class, key, value)
+    excluded = _normalize_excluded_field_names(getattr(admin_class, "exclude", None))
+    if excluded and getattr(admin_class, "fieldsets", None):
+        admin_class.fieldsets = _fieldsets_without_excluded(admin_class.fieldsets, excluded)
+    if getattr(admin_class, "model", None) is not None:
+        finalize_parent_inlines(admin_class, admin_class.model)
     return admin_class
 
 

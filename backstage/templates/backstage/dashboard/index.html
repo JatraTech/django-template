@@ -18,11 +18,14 @@
   {% endif %}
  {% endfor %}
 
- {% if "quick_actions" in dashboard_layout or "my_drafts" in dashboard_layout or "recent_activity" in dashboard_layout %}
+ {% if "quick_actions" in dashboard_layout or "my_drafts" in dashboard_layout or "recent_activity" in dashboard_layout or "charts" in dashboard_layout %}
  <div class="backstage-dashboard-columns">
   <div class="backstage-dashboard-columns__main flex flex-col gap-6">
    {% if "quick_actions" in dashboard_layout and dashboard_widgets.quick_actions %}
     {% include "backstage/dashboard/widgets/quick_actions.html" with actions=dashboard_widgets.quick_actions %}
+   {% endif %}
+   {% if "charts" in dashboard_layout and dashboard_widgets.charts %}
+    {% include "backstage/dashboard/widgets/charts.html" with charts=dashboard_widgets.charts %}
    {% endif %}
    {% if "my_drafts" in dashboard_layout %}
     {% include "backstage/dashboard/widgets/my_drafts.html" with drafts=dashboard_widgets.my_drafts %}

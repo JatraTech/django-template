@@ -6,9 +6,7 @@
 
  <span class="flex items-center font-semibold mr-auto text-font-important-light dark:text-font-important-dark">
  {% if inline_admin_form.original %}
- {% with inline_title=inline_admin_form.original.get_inline_title|default:inline_admin_form.original %}
- <strong class="font-semibold select-none">{{ inline_title }}</strong>
- {% endwith %}
+ <strong class="font-semibold select-none">{{ inline_admin_form.original }}</strong>
  {% else %}
  <strong class="font-semibold select-none">{{ inline_admin_formset.opts.verbose_name|capfirst }}: #<span class="stacked-counter">{{ forloop.counter }}</span></strong>
  {% endif %}
@@ -16,6 +14,8 @@
  {% include "backstage/helpers/edit_inline/inline_links.html" %}
  </span>
 
+ {% if inline_admin_formset.opts.inline_mode != "hub" %}
  {% include "backstage/helpers/edit_inline/stacked_delete.html" %}
+ {% endif %}
  </h3>
 {% endif %}

@@ -1,3 +1,6 @@
+{% if inline_admin_formset.opts.inline_mode == "hub" and inline_admin_formset.opts.hub_primary_tab %}
+{% include "backstage/helpers/edit_inline/hub_tabular_panel.html" %}
+{% else %}
 <div id="{{ inline_admin_formset.formset.prefix }}-group" data-inline-type="tabular" {% if inline_admin_formset.opts.tab %}x-show="activeTab == '{{ inline_admin_formset.formset.prefix|slugify }}'"{% else %}x-show="activeTab == 'general'"{% endif %}>
  <div class="tabular inline-related {% if forloop.last %}last-related{% endif %}">
  <fieldset class="module relative {{ inline_admin_formset.classes }} min-w-0" aria-labelledby="{{ inline_admin_formset.formset.prefix }}-heading">
@@ -11,6 +14,10 @@
  {% include inline_admin_formset.opts.template_before %}
  {% endif %}
 
+ {% if inline_admin_formset.opts.inline_mode == "hub" %}
+ {% include "backstage/helpers/edit_inline/hub_inline_help.html" %}
+ {% endif %}
+
  {% include "backstage/helpers/edit_inline/tabular_table.html" %}
 
  {% if inline_admin_formset.opts.template_after %}
@@ -21,3 +28,4 @@
  </fieldset>
  </div>
 </div>
+{% endif %}

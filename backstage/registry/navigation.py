@@ -137,11 +137,12 @@ def get_dashboard_nav_group(request) -> dict | None:
     dashboard = get_config().get("DASHBOARD") or {}
     if dashboard.get("enabled") is False:
         return None
+    nav_group_title = dashboard.get("nav_group_title") or gettext("Home")
     return {
         "id": "dashboard",
-        "title": "",
-        "separator": False,
-        "collapsible": False,
+        "title": nav_group_title,
+        "separator": True,
+        "collapsible": True,
         "items": [
             {
                 "title": gettext("Dashboard"),

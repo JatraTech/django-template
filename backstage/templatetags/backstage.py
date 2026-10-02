@@ -168,7 +168,7 @@ def render_section(context: RequestContext, section_class: type[BaseSection] | s
 @register.simple_tag(name="has_nav_item_active")
 def has_nav_item_active(items: list) -> bool:
     for item in items:
-        if "active" in item and item["active"]:
+        if item.get("active"):
             return True
 
     return False
@@ -732,6 +732,31 @@ def admin_object_app_url(context: RequestContext, object: Model, arg: str) -> st
     return f"{current_app}:{object._meta.app_label}_{object._meta.model_name}_{arg}"
 
 
+def _initials_from_display_name(display_name: str) -> str:
+    cleaned = (display_name or "").strip()
+    if not cleaned:
+        return "Y"
+    parts = cleaned.split()
+    if len(parts) >= 2:
+        return f"{parts[0][0]}{parts[1][0]}".upper()
+    return cleaned[:2].upper()
+
+
+@register.filter
+def user_initials(user) -> str:
+    if user is None:
+        return "Y"
+    display = ""
+    get_full_name = getattr(user, "get_full_name", None)
+    if callable(get_full_name):
+        display = (get_full_name() or "").strip()
+    if not display:
+        get_username = getattr(user, "get_username", None)
+        if callable(get_username):
+            display = (get_username() or "").strip()
+    return _initials_from_display_name(display)
+
+
 @register.filter
 def has_nested_tables(table: dict) -> bool:
     return any(isinstance(row, dict) and "table" in row for row in table.get("rows", []))
@@ -789,6 +814,43 @@ def do_capture(parser: Parser, token: Token) -> RenderCaptureNode:
     return RenderCaptureNode(nodelist, variable_name, silent)
 
 
+def _hub_primary_tab_enabled(inline: InlineAdminFormSet) -> bool:
+    if getattr(inline.opts, "inline_mode", "default") != "hub":
+        return False
+    if getattr(inline.opts, "hub_anchor_fieldset_tab", None):
+        return False
+    return getattr(inline.opts, "hub_primary_tab", True)
+
+
+def _hub_inline_in_tab_area(inline: InlineAdminFormSet) -> bool:
+    if getattr(inline.opts, "inline_mode", "default") != "hub":
+        return False
+    if getattr(inline.opts, "hub_anchor_fieldset_tab", None):
+        return True
+    return getattr(inline.opts, "hub_primary_tab", True)
+
+
+def _anchor_tab_slug(inline: InlineAdminFormSet) -> str | None:
+    anchor = getattr(inline.opts, "hub_anchor_fieldset_tab", None)
+    if not anchor:
+        return None
+    return slugify(str(anchor), allow_unicode=True)
+
+
+def hub_primary_tab_id(inline: InlineAdminFormSet) -> str:
+    return f"inline-{slugify(inline.formset.prefix, allow_unicode=True)}"
+
+
+@register.filter
+def hub_primary_tab_inlines(inline_admin_formsets: list[InlineAdminFormSet] | None) -> list[InlineAdminFormSet]:
+    return [inline for inline in inline_admin_formsets or [] if _hub_primary_tab_enabled(inline)]
+
+
+@register.filter
+def hub_primary_tab_slug(inline: InlineAdminFormSet) -> str:
+    return hub_primary_tab_id(inline)
+
+
 @register.filter
 def tabs_active(fieldsets: list[Fieldset]) -> str:
     active = ""
@@ -806,6 +868,30 @@ def tabs_active(fieldsets: list[Fieldset]) -> str:
 
 
 @register.filter
+def primary_tabs_active(fieldsets: list[Fieldset], inline_admin_formsets: list[InlineAdminFormSet] | None) -> str:
+    active = tabs_active(fieldsets)
+
+    for inline in inline_admin_formsets or []:
+        if _hub_primary_tab_enabled(inline) and _count_errors_in_inline(inline) > 0:
+            return hub_primary_tab_id(inline)
+        anchor_slug = _anchor_tab_slug(inline)
+        if anchor_slug and _count_errors_in_inline(inline) > 0:
+            return anchor_slug
+
+    if not fieldsets:
+        hubs = hub_primary_tab_inlines(inline_admin_formsets)
+        if hubs:
+            return hub_primary_tab_id(hubs[0])
+
+    return active
+
+
+@register.filter
+def hub_inline_errors_count(inline: InlineAdminFormSet) -> int:
+    return _count_errors_in_inline(inline)
+
+
+@register.filter
 def tabs_errors_count(fieldset: Fieldset) -> int:
     count = 0
 
@@ -815,6 +901,35 @@ def tabs_errors_count(fieldset: Fieldset) -> int:
                 count += 1
 
     return count
+
+
+@register.filter
+def tabs_errors_count_anchored(fieldset: Fieldset, inline_admin_formsets: list[InlineAdminFormSet] | None) -> int:
+    count = tabs_errors_count(fieldset)
+    if not hasattr(fieldset, "name"):
+        return count
+    tab_slug = slugify(str(fieldset.name), allow_unicode=True)
+    for inline in inline_admin_formsets or []:
+        if _anchor_tab_slug(inline) == tab_slug:
+            count += _count_errors_in_inline(inline)
+    return count
+
+
+@register.filter
+def hub_inline_in_tab_area(inline: InlineAdminFormSet) -> bool:
+    return _hub_inline_in_tab_area(inline)
+
+
+@register.filter
+def inlines_anchored_to_tab(
+    inline_admin_formsets: list[InlineAdminFormSet] | None,
+    tab_slug: str,
+) -> list[InlineAdminFormSet]:
+    result: list[InlineAdminFormSet] = []
+    for inline in inline_admin_formsets or []:
+        if _anchor_tab_slug(inline) == tab_slug:
+            result.append(inline)
+    return result
 
 
 @register.simple_tag

@@ -1,11 +1,11 @@
 {% load i18n backstage %}
 
-<div class="border-b border-border flex gap-2 items-center h-[65px] mb-4 px-3 {% element_classes 'navigation_header' %}">
- <div class="min-w-0 grow h-[64px] -mx-3 px-3 navigation-header-brand">
+<div class="backstage-sidebar-header-bar border-b border-border flex gap-2 items-stretch h-[65px] mb-4 pr-3 {% element_classes 'navigation_header' %}">
+ <div class="min-w-0 grow navigation-header-brand">
  {% include "backstage/helpers/site_header_branding.html" %}
  </div>
 
- <span class="material-symbols-outlined block cursor-pointer h-[18px] shrink-0 xl:hidden! hover:text-base-700 dark:hover:text-base-200" x-on:click="sidebarToggle()">
+ <span class="material-symbols-outlined block cursor-pointer h-[18px] shrink-0 self-center xl:hidden! hover:text-base-700 dark:hover:text-base-200" x-on:click="sidebarToggle()">
  close
  </span>
 </div>

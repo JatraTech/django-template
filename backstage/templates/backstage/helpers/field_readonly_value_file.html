@@ -5,7 +5,9 @@
  <span class="flex items-center">-</span>
  {% elif field.is_image %}
  <a href="{{ url }}" target="_blank" class="block max-w-48">
- <img src="{{ url }}" alt="{% trans 'Image preview' %}" class="block rounded-default" />
+ <span class="backstage-image-preview">
+ <img src="{{ url }}" alt="{% trans 'Image preview' %}" />
+ </span>
  </a>
  {% else %}
  <a href="{{ url }}" target="_blank">

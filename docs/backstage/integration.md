@@ -27,6 +27,8 @@ path("admin/", admin.site.urls),
 python manage.py migrate backstage
 ```
 
+Apply migrations after upgrading the package (includes `0002_backfill_branding_from_config` for existing Admin appearance rows).
+
 Details: [guides/quickstart.md](guides/quickstart.md).
 
 ## 2. Host config (one file)
@@ -81,6 +83,18 @@ Full contract: [guides/host-contract.md](guides/host-contract.md).
 
 For extra inline classes, fieldsets, or ordering on a parent, use `ADMIN_OVERRIDES` in `backstage_host.py` (e.g. `"inlines"`, `"fieldsets"`). See [features/customization.md](features/customization.md).
 
+### Inline relations (`INLINE_RELATIONS`)
+
+Declare parent → child edges in `BACKSTAGE["INLINE_RELATIONS"]` (export a list from `backstage_host.py`). At startup the package compiles them into inlines, `STANDALONE_CHILD_MODELS`, and child `exclude` as needed:
+
+| `mode` | Behavior |
+|--------|----------|
+| `default_stacked` | Editable stacked inline (factory default if omitted) |
+| `default_tabular` | Editable tabular inline |
+| `hub_tabular` / `hub_stacked` | Read-only summary + Edit/Delete + Add/View all footer |
+
+Set **`primary_tab_slug`** on a hub entry to anchor the hub panel on a parent fieldset tab (same tab bar as `classes: ["tab"]` fieldsets). See [reference/configuration.md](reference/configuration.md).
+
 ## 4. Editor copy policy
 
 | Put copy on… | When |
@@ -111,7 +125,7 @@ The integration check prints **warnings** when `FIELD_EDITOR_META` repeats a mod
 
 Draft/publish: [features/draft-publish.md](features/draft-publish.md).
 
-Branding: **System → Admin appearance** (DB overrides `BACKSTAGE`).
+Branding: **System → Admin appearance**. Text fields (title, header, subheader) are stored in the DB; `BACKSTAGE` SITE_* seed new or empty rows via migration/create only — see [reference/configuration.md](reference/configuration.md).
 
 ## Layer boundaries
 

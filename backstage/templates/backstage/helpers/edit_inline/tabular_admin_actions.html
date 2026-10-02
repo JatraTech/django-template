@@ -1,0 +1,11 @@
+{% load i18n admin_urls %}
+
+{% if inline_admin_formset.opts.inline_mode == "hub" and inline_admin_form.original %}
+ <td class="field-actions group field-tabular min-h-[62.5px] w-px min-w-[10.5rem] align-middle whitespace-nowrap {% if forloop.last %}border-b-0{% else %}border-b border-border{% endif %} dark:border-border font-normal text-left text-sm {% if not forloop.last %}{% if nested_inline %}lg:group-[.last]/nested:border-b-0{% elif not inline_admin_form.form.nested_formsets %}lg:group-[.last]/parent:border-b-0{% endif %}{% endif %}">
+ {% if inline_admin_form.model_admin.has_registered_model %}
+ {% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote as hub_change_url %}
+ {% url inline_admin_form.model_admin.opts|admin_urlname:'delete' inline_admin_form.original.pk|admin_urlquote as hub_delete_url %}
+ {% include "backstage/helpers/edit_delete_action_links.html" with change_url=hub_change_url delete_url=hub_delete_url %}
+ {% endif %}
+ </td>
+{% endif %}

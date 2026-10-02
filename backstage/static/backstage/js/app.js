@@ -15,6 +15,8 @@ window.addEventListener("load", () => {
 
 	scrollSidebarNav();
 
+	initFieldsetTabsWheelScroll();
+
 	crispyFormset();
 });
 
@@ -249,6 +251,67 @@ function expandSidebarGroupsForActiveItem(activeItem) {
 		}
 		parent = parent.parentElement;
 	}
+}
+
+function initFieldsetTabsWheelScroll() {
+	const SCROLL_EASE = 0.22;
+
+	document.querySelectorAll(".backstage-fieldset-tabs-scroll").forEach((el) => {
+		let targetScroll = el.scrollLeft;
+		let rafId = null;
+
+		const maxScrollLeft = () => el.scrollWidth - el.clientWidth;
+
+		const tick = () => {
+			const current = el.scrollLeft;
+			const diff = targetScroll - current;
+
+			if (Math.abs(diff) < 0.5) {
+				el.scrollLeft = targetScroll;
+				rafId = null;
+				return;
+			}
+
+			el.scrollLeft = current + diff * SCROLL_EASE;
+			rafId = requestAnimationFrame(tick);
+		};
+
+		const scheduleScroll = () => {
+			if (!rafId) {
+				rafId = requestAnimationFrame(tick);
+			}
+		};
+
+		el.addEventListener(
+			"scroll",
+			() => {
+				if (!rafId) {
+					targetScroll = el.scrollLeft;
+				}
+			},
+			{ passive: true },
+		);
+
+		el.addEventListener(
+			"wheel",
+			(e) => {
+				if (!e.deltaY || el.scrollWidth <= el.clientWidth) {
+					return;
+				}
+
+				e.preventDefault();
+
+				if (!rafId) {
+					targetScroll = el.scrollLeft;
+				}
+
+				const max = maxScrollLeft();
+				targetScroll = Math.max(0, Math.min(max, targetScroll + e.deltaY));
+				scheduleScroll();
+			},
+			{ passive: false },
+		);
+	});
 }
 
 function scrollSidebarNav() {
@@ -921,30 +984,74 @@ const renderCharts = async () => {
 
 		const parsedData = JSON.parse(chart.dataset.value);
 
+		const chartHost =
+			chart.closest(".backstage-dashboard-chart__canvas-wrap") || document.body;
+
+		const normalizeCanvasColor = (color) => {
+			if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") {
+				return color;
+			}
+			const rgbSpaceSeparated = color.match(
+				/^rgb\((\d+)\s+(\d+)\s+(\d+)\)$/,
+			);
+			if (rgbSpaceSeparated) {
+				return `rgb(${rgbSpaceSeparated[1]}, ${rgbSpaceSeparated[2]}, ${rgbSpaceSeparated[3]})`;
+			}
+			return color;
+		};
+
+		const resolveCssVarColor = (cssVarExpression) => {
+			const expression = cssVarExpression.startsWith("var(")
+				? cssVarExpression
+				: `var(${cssVarExpression})`;
+			const varMatch = expression.match(/var\((--[^)]+)\)/);
+			if (varMatch) {
+				const raw = getComputedStyle(document.documentElement)
+					.getPropertyValue(varMatch[1])
+					.trim();
+				if (raw && !raw.startsWith("color-mix(")) {
+					return normalizeCanvasColor(raw);
+				}
+			}
+			const probe = document.createElement("span");
+			probe.style.position = "absolute";
+			probe.style.visibility = "hidden";
+			probe.style.pointerEvents = "none";
+			probe.style.backgroundColor = expression;
+			chartHost.appendChild(probe);
+			const resolved = normalizeCanvasColor(
+				getComputedStyle(probe).backgroundColor,
+			);
+			probe.remove();
+			return resolved;
+		};
+
 		for (const key in parsedData.datasets) {
 			const dataset = parsedData.datasets[key];
 			const processColor = (colorProp) => {
 				if (Array.isArray(dataset?.[colorProp])) {
 					for (const [index, prop] of dataset?.[colorProp].entries()) {
-						if (prop.startsWith("var(")) {
-							const cssVar = prop.match(/var\((.*?)\)/)[1];
-							const color = getComputedStyle(document.documentElement)
-								.getPropertyValue(cssVar)
-								.trim();
-							dataset[colorProp][index] = color;
+						if (typeof prop === "string" && prop.startsWith("var(")) {
+							dataset[colorProp][index] = resolveCssVarColor(prop);
 						}
 					}
-				} else if (dataset?.[colorProp]?.startsWith("var(")) {
-					const cssVar = dataset[colorProp].match(/var\((.*?)\)/)[1];
-					const color = getComputedStyle(document.documentElement)
-						.getPropertyValue(cssVar)
-						.trim();
-					dataset[colorProp] = color;
+				} else if (
+					typeof dataset?.[colorProp] === "string" &&
+					dataset[colorProp].startsWith("var(")
+				) {
+					dataset[colorProp] = resolveCssVarColor(dataset[colorProp]);
 				}
 			};
 
 			processColor("borderColor");
 			processColor("backgroundColor");
+
+			if (Array.isArray(dataset.backgroundColor)) {
+				dataset.hoverBackgroundColor = [...dataset.backgroundColor];
+			}
+			if (typeof dataset.borderColor === "string") {
+				dataset.hoverBorderColor = dataset.borderColor;
+			}
 		}
 
 		CHART_OPTIONS = { ...DEFAULT_CHART_OPTIONS };
@@ -966,11 +1073,44 @@ const renderCharts = async () => {
 		Chart.defaults.font.family = "Inter";
 		Chart.defaults.font.size = 12;
 
+		let chartOptions = { ...CHART_OPTIONS };
+		if (options) {
+			try {
+				chartOptions = { ...CHART_OPTIONS, ...JSON.parse(options) };
+			} catch {
+				chartOptions = { ...CHART_OPTIONS };
+			}
+		}
+
+		if (type === "doughnut" || type === "pie") {
+			chartOptions.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+			chartOptions.plugins = chartOptions.plugins || {};
+			chartOptions.plugins.tooltip = {
+				...chartOptions.plugins.tooltip,
+				enabled: chartOptions.plugins.tooltip?.enabled !== false,
+				callbacks: {
+					...chartOptions.plugins.tooltip?.callbacks,
+					labelColor(context) {
+						const bg = context.dataset.backgroundColor;
+						const color = Array.isArray(bg)
+							? bg[context.dataIndex]
+							: bg;
+						return {
+							borderColor: color,
+							backgroundColor: color,
+							borderWidth: 0,
+							borderRadius: 2,
+						};
+					},
+				},
+			};
+		}
+
 		charts.push(
 			new Chart(ctx, {
 				type: type || "bar",
 				data: parsedData,
-				options: options ? JSON.parse(options) : { ...CHART_OPTIONS },
+				options: chartOptions,
 			}),
 		);
 	}
@@ -1096,6 +1236,17 @@ function deleteInlineTemplateHandler(e) {
 }
 
 function addInlineTemplateHandler(e) {
+	const anchor =
+		e.currentTarget.tagName === "A"
+			? e.currentTarget
+			: e.currentTarget.closest("a");
+	if (anchor) {
+		const href = anchor.getAttribute("href");
+		if (href && href !== "#") {
+			return;
+		}
+	}
+
 	e.preventDefault();
 
 	const formset = e.target.closest(".formset");

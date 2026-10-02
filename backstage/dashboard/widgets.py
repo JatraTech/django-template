@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from django.contrib.admin.models import LogEntry
@@ -7,7 +8,13 @@ from django.contrib.admin.sites import AdminSite
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
+from backstage.branding import resolve_text
 from backstage.conf import get_model_label
+from backstage.dashboard.activity_labels import (
+    activity_context_label,
+    human_activity_title,
+    parse_inline_objects,
+)
 from backstage.dashboard.resolvers import (
     admin_add_url,
     admin_change_url,
@@ -28,11 +35,26 @@ from backstage.dashboard.resolvers import (
 from backstage.draft.conf import is_draft_publish_enabled
 from backstage.settings import get_config
 
+CHART_ACCENT_VARS: dict[str, str] = {
+    "blue": "var(--backstage-accent-blue)",
+    "green": "var(--backstage-accent-green)",
+    "amber": "var(--backstage-accent-amber)",
+    "purple": "var(--backstage-accent-purple)",
+    "slate": "var(--backstage-accent-slate)",
+}
+
+CHART_FILL_VARS: dict[str, str] = {
+    "blue": "var(--backstage-chart-fill-blue)",
+    "green": "var(--backstage-chart-fill-green)",
+    "amber": "var(--backstage-chart-fill-amber)",
+    "purple": "var(--backstage-chart-fill-purple)",
+    "slate": "var(--backstage-chart-fill-slate)",
+}
+
 
 def build_welcome(request: HttpRequest, admin_site: AdminSite, dashboard_config: dict[str, Any]) -> dict[str, Any]:
     welcome_cfg = dashboard_config.get("welcome") or {}
-    config = get_config()
-    title = welcome_cfg.get("title") or config.get("SITE_HEADER") or _("Dashboard")
+    title = welcome_cfg.get("title") or resolve_text("site_header", "SITE_HEADER") or _("Dashboard")
     body = welcome_cfg.get("body") or _("Use the sidebar to find content, or the shortcuts below when configured.")
     link_specs = welcome_cfg.get("links") or []
     links = build_welcome_links(request, admin_site, link_specs)
@@ -58,6 +80,9 @@ def build_stats(request: HttpRequest, admin_site: AdminSite, dashboard_config: d
     cards: list[dict[str, Any]] = []
 
     for spec in specs:
+        if spec.get("if_draft_publish") and not is_draft_publish_enabled():
+            continue
+
         model_label = spec.get("model")
         model = None
         if model_label:
@@ -86,10 +111,11 @@ def build_stats(request: HttpRequest, admin_site: AdminSite, dashboard_config: d
             except LookupError:
                 link_model = None
 
+        link = spec.get("link", "changelist") if link_model else spec.get("link")
         url = resolve_stat_link_url(
             admin_site,
             link_model,
-            spec.get("link", "changelist"),
+            link,
             spec.get("link_query"),
         )
         icon = resolve_model_icon(link_model, spec.get("icon")) if link_model else spec.get("icon", "analytics")
@@ -105,6 +131,90 @@ def build_stats(request: HttpRequest, admin_site: AdminSite, dashboard_config: d
         )
 
     return cards
+
+
+def build_charts(request: HttpRequest, admin_site: AdminSite, dashboard_config: dict[str, Any]) -> list[dict[str, Any]]:
+    specs = dashboard_config.get("charts") or []
+    charts: list[dict[str, Any]] = []
+
+    for spec in specs:
+        segment_specs = spec.get("segments") or []
+        ring_labels: list[str] = []
+        ring_data: list[int] = []
+        ring_colors: list[str] = []
+        legend: list[dict[str, Any]] = []
+        segment_counts: list[int] = []
+
+        for segment in segment_specs:
+            if segment.get("if_draft_publish") and not is_draft_publish_enabled():
+                continue
+
+            callback_path = segment.get("count_callback")
+            model_label = segment.get("model")
+            model = None
+            count: int | None = None
+
+            if callback_path:
+                try:
+                    count = resolve_count_callback(callback_path, request, admin_site)
+                except (ImportError, TypeError, ValueError):
+                    continue
+            elif model_label:
+                try:
+                    model = parse_model_label(str(model_label))
+                except LookupError:
+                    continue
+                if not user_can_view_model(request, admin_site, model):
+                    continue
+                count = safe_filter_count(model, segment.get("filter") or {})
+            else:
+                continue
+
+            accent = str(segment.get("accent") or "blue")
+            fill_color = CHART_FILL_VARS.get(accent, CHART_FILL_VARS["blue"])
+            label = str(resolve_stat_label(model, segment.get("label")))
+
+            segment_counts.append(count)
+            legend.append({"label": label, "count": count, "accent": accent})
+            if count > 0:
+                ring_labels.append(label)
+                ring_data.append(count)
+                ring_colors.append(fill_color)
+
+        if not legend:
+            continue
+
+        total = sum(segment_counts)
+        if total == 0:
+            continue
+
+        if not ring_labels:
+            continue
+
+        chart_data = {
+            "labels": ring_labels,
+            "datasets": [
+                {
+                    "data": ring_data,
+                    "backgroundColor": ring_colors,
+                    "borderWidth": 2,
+                    "borderColor": "var(--backstage-surface)",
+                }
+            ],
+        }
+        charts.append(
+            {
+                "id": spec.get("id") or f"chart_{len(charts)}",
+                "title": str(spec.get("title") or _("Chart")),
+                "type": spec.get("type") or "doughnut",
+                "height": int(spec.get("height") or 220),
+                "total": total,
+                "data_json": json.dumps(chart_data),
+                "legend": legend,
+            }
+        )
+
+    return charts
 
 
 def build_quick_actions(
@@ -201,18 +311,15 @@ def build_recent_activity(request: HttpRequest, dashboard_config: dict[str, Any]
     activity: list[dict[str, Any]] = []
     for entry in entries:
         admin_url = entry.get_admin_url()
-        content_type_name = ""
-        if entry.content_type_id:
-            content_type_name = str(entry.content_type.name)
+        inline_objects = parse_inline_objects(entry.change_message or "")
+        title = human_activity_title(entry)
+        context_label = activity_context_label(entry, inline_objects)
         activity.append(
             {
-                "object_repr": entry.object_repr,
+                "title": title,
+                "context_label": context_label,
                 "admin_url": admin_url,
-                "content_type_name": content_type_name,
                 "action_time": entry.action_time,
-                "is_addition": entry.is_addition,
-                "is_change": entry.is_change,
-                "is_deletion": entry.is_deletion,
                 "user_repr": str(entry.user) if entry.user_id else "",
                 "user_initials": _user_initials(str(entry.user) if entry.user_id else ""),
             }
