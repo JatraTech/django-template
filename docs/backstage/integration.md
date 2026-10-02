@@ -113,7 +113,7 @@ Do not duplicate the same text on model and meta.
 
 ## 6. Preview (optional)
 
-Implement `resolve_preview_route` in **`backstage_host.py`**. Enable CORS header `x-preview-token`. See [features/preview-and-frontend.md](features/preview-and-frontend.md).
+Implement `resolve_preview_route` in **`backstage_host.py`**. The SPA sends preview tokens on API requests; whitelist **`x-preview-token`** in `CORS_ALLOW_HEADERS` (see [features/preview-and-frontend.md](features/preview-and-frontend.md)). Greenfield projects: this is already set in template **`app/settings.py`**. Brownfield merges: copy the Security & CORS block from [examples/settings_snippet.py](examples/settings_snippet.py).
 
 ## Verify in your project
 

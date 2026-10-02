@@ -14,7 +14,8 @@ Validates `INSTALLED_APPS` order, `BACKSTAGE` dict, theme URL, migrations, and p
 |---------|--------------|-----|
 | Broken iframe icon | Frontend not running | Start Vite/dev server |
 | Wrong page | Callback path mismatch | Fix `resolve_preview_route` in `backstage_host.py` |
-| 401/403 on API in iframe | Missing CORS header | Add `x-preview-token` to `CORS_ALLOW_HEADERS` |
+| Browser: “Request header field x-preview-token is not allowed…” (CORS preflight) | `CORS_ALLOW_HEADERS` missing `x-preview-token` | Add tuple in host `settings.py` (see [../features/preview-and-frontend.md](../features/preview-and-frontend.md) or [../examples/settings_snippet.py](../examples/settings_snippet.py)) |
+| 401/403 on API in iframe | Missing CORS header or invalid token | Add `x-preview-token` to `CORS_ALLOW_HEADERS`; check preview token TTL |
 | Stale content | Expected | Preview shows **saved** DB state — save form first |
 | Empty preview panel | Callback returned `None` | Implement route for model class |
 

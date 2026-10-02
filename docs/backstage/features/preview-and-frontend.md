@@ -30,6 +30,8 @@ Final URL: `{frontend_url}{route}?preview={token}`
 
 ## CORS (SPA frontend)
 
+Greenfield projects using this template already configure this in **`app/settings.py`**. When merging Backstage into an existing Django project, add the same block from [examples/settings_snippet.py](../examples/settings_snippet.py).
+
 ```python
 from corsheaders.defaults import default_headers
 

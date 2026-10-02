@@ -1,4 +1,7 @@
 # Paste into settings.py (replace yourapp with your Django app label).
+#
+# At top of settings.py (with other imports):
+#   from corsheaders.defaults import default_headers
 
 FRONTEND_URL = "http://localhost:5173"
 
@@ -33,9 +36,11 @@ BACKSTAGE = {
     "DASHBOARD": DASHBOARD,
 }
 
-# Preview API from iframe / SPA:
-# from corsheaders.defaults import default_headers
-# CORS_ALLOW_HEADERS = (*default_headers, "x-preview-token")
+# Security & CORS — required for SPA preview (iframe calls API with X-Preview-Token):
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-preview-token",
+)
 
 # TinyMCE — see docs/07-editor-ux.md
 # TINYMCE_DEFAULT_CONFIG = { ... }
