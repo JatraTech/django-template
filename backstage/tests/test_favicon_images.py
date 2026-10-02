@@ -3,10 +3,10 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from PIL import Image
 
+from backstage.favicon_images import generate_square_favicon_png
+
 
 def test_generate_square_favicon_png_preserves_aspect_ratio():
-    from app.utils.images import generate_square_favicon_png
-
     wide = BytesIO()
     Image.new("RGBA", (160, 40), color=(255, 0, 0, 255)).save(wide, format="PNG")
     wide.seek(0)

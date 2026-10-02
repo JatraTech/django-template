@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.core.files.base import ContentFile
 
-from app.utils.images import generate_square_favicon_png
+from backstage.favicon_images import generate_square_favicon_png
 
 
 def regenerate_favicon_light(settings_obj) -> bool:

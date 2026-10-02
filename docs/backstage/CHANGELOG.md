@@ -3,7 +3,7 @@
 ## 2026-10-02 (changelist and favicon)
 
 - **Changelist bulk actions:** Django-style always-visible action row (select + Go + selection counter); compact toolbar CSS; slightly taller table rows.
-- **Admin tab icon:** Auto-generates letterboxed 32×32 PNG `favicon_light` from `logo_light` on save; migration `0003_backstagesettings_favicon_light`; management command `regenerate_admin_favicon`.
+- **Admin tab icon:** Auto-generates letterboxed 32×32 PNG `favicon_light` from `logo_light` on save (helper in `backstage.favicon_images`); migration `0003_backstagesettings_favicon_light`; management command `regenerate_admin_favicon`.
 
 ## 2026-10-02 (package sync)
 
