@@ -54,7 +54,6 @@ class BackstageHubTabularInline(HubInlineMixin, BackstageTabularInline):
 class BackstageHubStackedInline(HubInlineMixin, BackstageStackedInline):
     hub_show_title = True
     show_title = True
-    collapsible = True
 
 
 class SingletonAdmin(BackstageModelAdmin):

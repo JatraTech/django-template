@@ -168,7 +168,7 @@ def render_section(context: RequestContext, section_class: type[BaseSection] | s
 @register.simple_tag(name="has_nav_item_active")
 def has_nav_item_active(items: list) -> bool:
     for item in items:
-        if item.get("active"):
+        if "active" in item and item["active"]:
             return True
 
     return False
