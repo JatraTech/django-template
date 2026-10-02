@@ -47,6 +47,7 @@ Wire `settings.py`:
 from yourapp.backstage_host import (
     ADMIN_OVERRIDES,
     FIELD_EDITOR_META,
+    INLINE_RELATIONS,
     MODEL_ICONS,
     MODEL_LABELS,
     NAV_GROUPS,
@@ -62,6 +63,7 @@ BACKSTAGE = {
     "MODEL_LABELS": MODEL_LABELS,
     "PREVIEW_ROUTE_CALLBACK": "yourapp.backstage_host.resolve_preview_route",
     "ADMIN_OVERRIDES": ADMIN_OVERRIDES,
+    "INLINE_RELATIONS": INLINE_RELATIONS,
     "FIELD_EDITOR_META": FIELD_EDITOR_META,
     "TAB_DESCRIPTIONS": TAB_DESCRIPTIONS,
 }
@@ -73,9 +75,53 @@ See [examples/settings_snippet.py](examples/settings_snippet.py).
 
 Auto-admin detects `SingletonModel`, SEO field names, and rich-text field names. Copy abstract bases from [examples/host_singleton.py](examples/host_singleton.py) and [examples/host_seo_mixin.py](examples/host_seo_mixin.py).
 
+For headless/public APIs, copy [examples/host_cms_api_utils.py](examples/host_cms_api_utils.py) and [examples/host_singleton_viewset.py](examples/host_singleton_viewset.py).
+
 Full contract: [guides/host-contract.md](guides/host-contract.md).
 
 **Page-child models (sidebar):** If a model has a single foreign key to a parent page in the same app (ignoring audit fields like `created_by` / `updated_by`), Backstage treats it as inline-only: it is not registered as a standalone admin and does not appear in the auto-built sidebar. Edit those rows on the parent change form tabs instead. To order and allowlist sidebar items, set optional `models` on each entry in `NAV_GROUPS` (e.g. `"website.HomePage"`).
+
+### Inline relations (`INLINE_RELATIONS`)
+
+Use one list in `backstage_host.py` instead of juggling `ADMIN_OVERRIDES.inlines`, `STANDALONE_CHILD_MODELS`, `INLINE_HUB`, and a custom inline class.
+
+| Field | Purpose |
+|--------|---------|
+| `parent` / `child` | Model class names |
+| `mode` | `default_stacked` \| `default_tabular` \| `hub_tabular` \| `hub_stacked` |
+| `fk` | Optional; inferred when only one FK to parent |
+| `fields`, `ordering` | Inline columns |
+| `standalone_child` | Child keeps full admin (changelist + change) |
+| `hide_parent_fk_on_child` | `exclude` parent FK on child admin |
+| `help_text`, `add_label`, `changelist_label` | Hub footer copy |
+| `primary_tab` | Hub only: `false` keeps the legacy block below fieldsets; default `true` adds a tab next to Page/SEO fieldset tabs |
+| `inline_class` | Optional dotted path to override generated inline |
+
+Unconfigured reverse FKs still get **default stacked** editable inlines.
+
+Example (hub summary on a singleton page; child edited on standalone screens):
+
+```python
+INLINE_RELATIONS = [
+    {
+        "parent": "PressReleasesPage",
+        "child": "PressRelease",
+        "mode": "hub_tabular",
+        "fk": "press_page",
+        "fields": ("date", "title", "category"),
+        "ordering": ("-date",),
+        "standalone_child": True,
+        "hide_parent_fk_on_child": True,
+        "help_text": _("Summary only. Use Edit for full body, Add for a new release."),
+    },
+]
+```
+
+Wire in `settings.py`: `"INLINE_RELATIONS": INLINE_RELATIONS`. See [features/hub-inlines.md](features/hub-inlines.md).
+
+**Hub primary tabs:** When the parent uses tabbed fieldsets (`classes: ["tab"]` on fieldsets), each `hub_*` relation with `primary_tab` enabled (default) appears as an extra tab in the same strip (e.g. Page | SEO | Press releases). The table and Add/View-all footer live inside that tab panel—not a separate card below the page.
+
+Legacy `INLINE_HUB` remains supported; do not duplicate the same parent/child in both.
 
 ## 4. Editor copy policy
 

@@ -1096,6 +1096,17 @@ function deleteInlineTemplateHandler(e) {
 }
 
 function addInlineTemplateHandler(e) {
+	const anchor =
+		e.currentTarget.tagName === "A"
+			? e.currentTarget
+			: e.currentTarget.closest("a");
+	if (anchor) {
+		const href = anchor.getAttribute("href");
+		if (href && href !== "#") {
+			return;
+		}
+	}
+
 	e.preventDefault();
 
 	const formset = e.target.closest(".formset");

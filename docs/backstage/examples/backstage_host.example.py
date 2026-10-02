@@ -52,6 +52,21 @@ MODEL_ICONS = {
 
 MODEL_LABELS: dict[str, str] = {}
 
+# --- Parent → child inlines (optional) ---
+# Unconfigured reverse FKs still use default stacked editable inlines on the parent.
+# INLINE_RELATIONS = [
+#     {
+#         "parent": "PressReleasesPage",
+#         "child": "PressRelease",
+#         "mode": "hub_tabular",
+#         "fk": "press_page",
+#         "fields": ("date", "title", "category"),
+#         "standalone_child": True,
+#         "hide_parent_fk_on_child": True,
+#     },
+# ]
+INLINE_RELATIONS: list[dict[str, Any]] = []
+
 # --- Dashboard (optional; see configuration.md) ---
 
 DASHBOARD = {

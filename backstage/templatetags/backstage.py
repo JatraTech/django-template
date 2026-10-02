@@ -168,7 +168,7 @@ def render_section(context: RequestContext, section_class: type[BaseSection] | s
 @register.simple_tag(name="has_nav_item_active")
 def has_nav_item_active(items: list) -> bool:
     for item in items:
-        if "active" in item and item["active"]:
+        if item.get("active"):
             return True
 
     return False
@@ -789,6 +789,26 @@ def do_capture(parser: Parser, token: Token) -> RenderCaptureNode:
     return RenderCaptureNode(nodelist, variable_name, silent)
 
 
+def _hub_primary_tab_enabled(inline: InlineAdminFormSet) -> bool:
+    if getattr(inline.opts, "inline_mode", "default") != "hub":
+        return False
+    return getattr(inline.opts, "hub_primary_tab", True)
+
+
+def hub_primary_tab_id(inline: InlineAdminFormSet) -> str:
+    return f"inline-{slugify(inline.formset.prefix, allow_unicode=True)}"
+
+
+@register.filter
+def hub_primary_tab_inlines(inline_admin_formsets: list[InlineAdminFormSet] | None) -> list[InlineAdminFormSet]:
+    return [inline for inline in inline_admin_formsets or [] if _hub_primary_tab_enabled(inline)]
+
+
+@register.filter
+def hub_primary_tab_slug(inline: InlineAdminFormSet) -> str:
+    return hub_primary_tab_id(inline)
+
+
 @register.filter
 def tabs_active(fieldsets: list[Fieldset]) -> str:
     active = ""
@@ -803,6 +823,27 @@ def tabs_active(fieldsets: list[Fieldset]) -> str:
                     active = slugify(str(fieldset.name), allow_unicode=True)
 
     return active
+
+
+@register.filter
+def primary_tabs_active(fieldsets: list[Fieldset], inline_admin_formsets: list[InlineAdminFormSet] | None) -> str:
+    active = tabs_active(fieldsets)
+
+    for inline in inline_admin_formsets or []:
+        if _hub_primary_tab_enabled(inline) and _count_errors_in_inline(inline) > 0:
+            return hub_primary_tab_id(inline)
+
+    if not fieldsets:
+        hubs = hub_primary_tab_inlines(inline_admin_formsets)
+        if hubs:
+            return hub_primary_tab_id(hubs[0])
+
+    return active
+
+
+@register.filter
+def hub_inline_errors_count(inline: InlineAdminFormSet) -> int:
+    return _count_errors_in_inline(inline)
 
 
 @register.filter

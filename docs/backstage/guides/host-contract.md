@@ -6,7 +6,7 @@ Backstage auto-admin is **convention-driven**. These patterns are not enforced b
 
 | Pattern | When | Where |
 |---------|------|--------|
-| **A — Copy examples** | New client projects | [examples/host_singleton.py](examples/host_singleton.py), [examples/host_seo_mixin.py](examples/host_seo_mixin.py) |
+| **A — Copy examples** | New client projects | [examples/host_singleton.py](examples/host_singleton.py), [examples/host_seo_mixin.py](examples/host_seo_mixin.py), [examples/host_cms_api_utils.py](examples/host_cms_api_utils.py), [examples/host_singleton_viewset.py](examples/host_singleton_viewset.py) |
 | **B — Shared host mixins** | Larger monorepos | Shared `models/base.py` + audit mixins in your project |
 
 Backstage does not ship Django models for SEO/singleton in v1; the **host owns the schema**.
@@ -31,6 +31,14 @@ class AboutPage(SEOMixin, SingletonModel, ModelMixin):
 ```
 
 See [examples/host_singleton.py](examples/host_singleton.py).
+
+## Public API (DRF)
+
+Admin singletons and public APIs both use `pk=1`, but the API layer should load rows via **`get_singleton(ModelClass)`**, not by passing a queryset into helpers that expect a model class.
+
+Copy [examples/host_cms_api_utils.py](examples/host_cms_api_utils.py) into your CMS app. Use optional `prefetch_related=(...)` when serializers call `.all()` on related managers in `to_representation`.
+
+Copy [examples/host_singleton_viewset.py](examples/host_singleton_viewset.py) for a minimal read-only `ViewSet.list` pattern (`AllowAny`, `GET` only).
 
 ## SEO tab (`SEOMixin` / field names)
 

@@ -125,6 +125,8 @@ COMPOSE_PROJECT_NAME=your_project_name
 HOST_FORWARD_APP_PORT=8000
 ```
 
+If `HOST_FORWARD_APP_PORT` is not `8000`, update `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, and `BACKEND_URL` in `.env` to match the published API URL. See [`.env.example`](.env.example) (Docker / runtime and Celery sections) for `CELERY_WORKER_PREFETCH_MULTIPLIER`, optional `HOST_FORWARD_DB_PORT`, and `APP_UID` / `APP_GID`.
+
 ### Redis DB Registry
 
 One Redis instance, logical separation by DB index:
@@ -146,16 +148,37 @@ CHANNELS_REDIS_URL=redis://localhost:6379/3
 
 ### Docker Compose
 
-Compose uses shared anchors — customize via `.env`:
+Compose uses shared anchors (`x-common-env`, `x-common-runtime`, `x-common-service`) — customize via `.env`:
 
 ```env
 COMPOSE_PROJECT_NAME=your_project_name
 DB_NAME=your_db_name
 DB_PASSWORD=your_password
 HOST_FORWARD_APP_PORT=8000
+HOST_BIND_ADDRESS=127.0.0.1
 ```
 
 Inside Docker, `DB_HOST=db` and `REDIS_URL=redis://redis:6379` are set automatically.
+
+**Compose conventions**
+
+| Piece | Pattern |
+|-------|---------|
+| Compose project | `COMPOSE_PROJECT_NAME` (staging file uses `{name}-staging`) |
+| Containers | `{COMPOSE_PROJECT_NAME}_{role}` (staging: `{name}_staging_{role}`) |
+| Image | `{COMPOSE_PROJECT_NAME}-backend:latest` (staging: `:staging`) |
+| Network (Docker name) | `{COMPOSE_PROJECT_NAME}_net` (staging: `{name}_staging_net`) |
+| Media volume | `media_data` → `/app/media` |
+
+Only **`web`** declares `build`; worker and beat reuse the same image (avoids parallel build/tag races). `HOST_BIND_ADDRESS` defaults to `127.0.0.1`; set `0.0.0.0` when you need LAN access to the published port. Optional `DB_MEM_LIMIT`, `REDIS_MEM_LIMIT`, `WEB_MEM_LIMIT`, `WORKER_MEM_LIMIT`, and `BEAT_MEM_LIMIT` set per-service `mem_limit`.
+
+**HTTP server (Gunicorn vs Uvicorn)**
+
+Docker **`web`** defaults to **Gunicorn** on `app.wsgi` (typical REST + Celery). A commented **Uvicorn** block on `app.asgi` is in `docker-compose.yml` (and `docker-compose.staging.yml` if you use staging)—uncomment it and comment out the Gunicorn `command` when you need ASGI in Docker (for example after enabling [Django Channels](#optional-django-channels)). `WEB_CONCURRENCY` sets `--workers` for either server. Uvicorn options use `UVICORN_KEEPALIVE_TIMEOUT` in `.env` (see `.env.example`).
+
+**Upgrading from older template compose**
+
+Older forks used volume key `media` and network name `{name}_network`. After pulling this template, Compose creates new resources unless you migrate: copy data from the old volume (e.g. `docker run --rm -v old_media:/from -v new_media_data:/to alpine cp -a /from/. /to/`) or accept a fresh dev volume. Rename or recreate external networks if other stacks referenced the old network name.
 
 ### Optional: Django Channels
 
@@ -265,7 +288,7 @@ def your_task():
 
 **Staging secrets:** `STAGING_REMOTE_HOST`, `STAGING_REMOTE_USER`, `STAGING_REMOTE_SSH_KEY`, `STAGING_REMOTE_PATH`.
 
-Staging uses [`docker-compose.staging.yml`](docker-compose.staging.yml) (separate Compose project, `:staging` image tag, isolated network/volumes). Set `COMPOSE_PROJECT_NAME`, `DB_NAME`, and `HOST_FORWARD_APP_PORT` in staging `.env` so staging does not collide with production on the same host.
+Staging uses [`docker-compose.staging.yml`](docker-compose.staging.yml) (separate Compose project, `:staging` image tag, `{name}_staging_net` network, isolated volumes). It mirrors `docker-compose.yml` for services, limits, and HTTP server blocks—when you change production compose, apply the same edit to staging except for the staging `name`, image tag, container names, and network name. Set `COMPOSE_PROJECT_NAME`, `DB_NAME`, `HOST_FORWARD_APP_PORT`, and `HOST_BIND_ADDRESS` in staging `.env` so staging does not collide with production on the same host (use a different host port than prod, e.g. `8001`).
 
 **Frontend:** pair with [`../react-marketing-template`](../react-marketing-template) — use its `deploy-production.yml` / `deploy-staging.yml` (static `dist/` rsync) for the React site.
 

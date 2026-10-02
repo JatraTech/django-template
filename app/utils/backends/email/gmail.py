@@ -27,7 +27,7 @@ class GmailBackend(BaseEmailBackend):
     @classmethod
     def authenticate(cls):
         creds = service_account.Credentials.from_service_account_file(cls.CREDENTIALS_PATH, scopes=cls.SCOPES)
-        subject = f"noreply@{settings.APP_DOMAIN}"
+        subject = f"noreply@{settings.BACKEND_DOMAIN}"
         if subject:
             creds = creds.with_subject(subject)
         return creds

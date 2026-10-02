@@ -7,6 +7,14 @@
 
  <tr class="form-row has-[.delete:checked]:[&+.form-delete]:table-row ">
  {% spaceless %}
+ {% if inline_admin_formset.opts.inline_mode == "hub" %}
+ {% if inline_admin_form.needs_explicit_pk_field %}
+ {{ inline_admin_form.pk_field.field }}
+ {% endif %}
+ {% if inline_admin_form.fk_field %}
+ {{ inline_admin_form.fk_field.field }}
+ {% endif %}
+ {% endif %}
  {% for fieldset in inline_admin_form %}
  {% for line in fieldset %}
  {% for field in line %}
@@ -22,7 +30,7 @@
  {% for line in fieldset %}
  {% for field in line %}
  {% if field.is_readonly or not field.field.is_hidden %}
- <td{% if field.field.name %} class="min-h-[62.5px] align-middle border-b max-md:border-b border-border {% if nested_inline %}lg:group-[.last]/nested:border-b-0{% elif not inline_admin_form.form.nested_formsets %}lg:group-[.last]/parent:border-b-0{% endif %} dark:border-border field-{{ field.field.name }} group field-tabular {% if field.field.errors|length > 0 %} errors{% endif %}{% if inline_admin_form.original %} p-3 lg:py-3{% else %} py-3{% endif %} font-normal px-1.5 first:pl-3 last:pr-3 text-left {% if field.field.is_hidden %} hidden!{% endif %} {% if inline_admin_formset.opts.ordering_field and field.field.name == inline_admin_formset.opts.ordering_field and inline_admin_formset.opts.hide_ordering_field %}hidden!{% endif %}"{% endif %}>
+ <td{% if field.field.name %} class="min-h-[62.5px] align-middle {% if inline_admin_formset.opts.inline_mode == "hub" and forloop.last %}border-b-0{% else %}border-b max-md:border-b border-border {% if nested_inline %}lg:group-[.last]/nested:border-b-0{% elif not inline_admin_form.form.nested_formsets %}lg:group-[.last]/parent:border-b-0{% endif %}{% endif %} dark:border-border field-{{ field.field.name }} group field-tabular {% if field.field.errors|length > 0 %} errors{% endif %}{% if inline_admin_formset.opts.inline_mode == "hub" %} font-normal text-left{% elif inline_admin_form.original %} p-3 lg:py-3{% else %} py-3{% endif %}{% if inline_admin_formset.opts.inline_mode != "hub" %} font-normal px-1.5 first:pl-3 last:pr-3 text-left{% endif %} {% if field.field.is_hidden %} hidden!{% endif %} {% if inline_admin_formset.opts.ordering_field and field.field.name == inline_admin_formset.opts.ordering_field and inline_admin_formset.opts.hide_ordering_field %}hidden!{% endif %}"{% endif %}>
  {% include "backstage/helpers/edit_inline/tabular_field.html" %}
  </td>
  {% endif %}
@@ -30,7 +38,11 @@
  {% endfor %}
  {% endfor %}
 
+ {% if inline_admin_formset.opts.inline_mode == "hub" %}
+ {% include "backstage/helpers/edit_inline/tabular_admin_actions.html" %}
+ {% else %}
  {% include "backstage/helpers/edit_inline/tabular_delete.html" %}
+ {% endif %}
  </tr>
 
  {% if inline_admin_form.original %}

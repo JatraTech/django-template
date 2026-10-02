@@ -3,6 +3,7 @@ from __future__ import annotations
 from backstage.admin import ModelAdmin
 from backstage.branding import resolve_site_url
 from backstage.contrib.inlines.admin import StackedInline, TabularInline
+from backstage.contrib.inlines.hub import HubInlineMixin
 from backstage.mixins.rich_text import RichTextAdminMixin, RichTextInlineMixin
 from backstage.preview.routes import resolve_preview_route
 from backstage.preview.service import PreviewTokenService
@@ -42,6 +43,17 @@ class BackstageTabularInline(EditorMetadataMixin, RichTextInlineMixin, TabularIn
 
 
 class BackstageStackedInline(EditorMetadataMixin, RichTextInlineMixin, StackedInline):
+    collapsible = True
+
+
+class BackstageHubTabularInline(HubInlineMixin, BackstageTabularInline):
+    hub_show_title = False
+    show_title = False
+
+
+class BackstageHubStackedInline(HubInlineMixin, BackstageStackedInline):
+    hub_show_title = True
+    show_title = True
     collapsible = True
 
 

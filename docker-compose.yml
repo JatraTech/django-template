@@ -6,7 +6,7 @@ x-logging: &default_logging
     max-size: "20m"
     max-file: "5"
 
-x-app-environment: &app_environment
+x-common-env: &common_env
   DB_NAME: ${DB_NAME:-myproject}
   DB_USER: ${DB_USER:-postgres}
   DB_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -16,22 +16,26 @@ x-app-environment: &app_environment
   RUN_MIGRATIONS: "false"
   RUN_COLLECTSTATIC: "false"
 
-x-app-service: &app_service
+# Shared runtime anchor; build only on `web` (avoids parallel tag race on `docker compose up --build`).
+x-common-runtime: &common_runtime
   image: ${COMPOSE_PROJECT_NAME:-myproject}-backend:latest
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment:
+    <<: *common_env
+  logging: *default_logging
+  networks:
+    - app_net
+
+x-common-service: &common_service
+  <<: *common_runtime
   build:
     context: .
     dockerfile: Dockerfile
     args:
       APP_UID: ${APP_UID:-1000}
       APP_GID: ${APP_GID:-1000}
-  restart: unless-stopped
-  env_file:
-    - .env
-  environment:
-    <<: *app_environment
-  logging: *default_logging
-  networks:
-    - app_network
 
 services:
   db:
@@ -54,12 +58,14 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - app_network
+      - app_net
 
   redis:
     image: redis:8-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_redis
     restart: unless-stopped
+    mem_limit: ${REDIS_MEM_LIMIT:-512m}
+    logging: *default_logging
     volumes:
       - redis_data:/data
     healthcheck:
@@ -68,16 +74,18 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - app_network
+      - app_net
 
   web:
-    <<: *app_service
+    <<: *common_service
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_web
     mem_limit: ${WEB_MEM_LIMIT:-2g}
     environment:
-      <<: *app_environment
+      <<: *common_env
       RUN_MIGRATIONS: "true"
       RUN_COLLECTSTATIC: "true"
+    # --- HTTP server: pick one (comment/uncomment `command`) ---
+    # Default: Gunicorn (WSGI). For ASGI (e.g. Channels), comment gunicorn and uncomment uvicorn below.
     command: >
       sh -c "gunicorn app.wsgi:application
       --bind 0.0.0.0:8000
@@ -89,11 +97,21 @@ services:
       --max-requests-jitter=$${GUNICORN_MAX_REQUESTS_JITTER:-100}
       --access-logfile -
       --error-logfile -"
+    # command: >
+    #   sh -c "uvicorn app.asgi:application
+    #   --host 0.0.0.0
+    #   --port 8000
+    #   --workers $${WEB_CONCURRENCY:-2}
+    #   --timeout-keep-alive $${UVICORN_KEEPALIVE_TIMEOUT:-10}
+    #   --proxy-headers
+    #   --forwarded-allow-ips='*'
+    #   --log-level info"
     volumes:
-      - media:/app/media
+      - media_data:/app/media
       - ./staticfiles:/app/staticfiles
     ports:
-      - "${HOST_FORWARD_APP_PORT:-8000}:8000"
+      # App listens on 8000 in-container; host = HOST_FORWARD_APP_PORT. Set HOST_BIND_ADDRESS=0.0.0.0 for LAN access.
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${HOST_FORWARD_APP_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -107,8 +125,10 @@ services:
       start_period: 60s
 
   worker:
-    <<: *app_service
+    <<: *common_runtime
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_worker
+    mem_limit: ${WORKER_MEM_LIMIT:-4g}
+    stop_grace_period: 30s
     command: >
       sh -c "celery -A app worker
       --loglevel=INFO
@@ -116,14 +136,16 @@ services:
       --max-tasks-per-child=$${CELERY_WORKER_MAX_TASKS_PER_CHILD:-20}
       --prefetch-multiplier=$${CELERY_WORKER_PREFETCH_MULTIPLIER:-1}"
     volumes:
-      - media:/app/media
+      - media_data:/app/media
     depends_on:
       web:
         condition: service_healthy
 
   beat:
-    <<: *app_service
+    <<: *common_runtime
     container_name: ${COMPOSE_PROJECT_NAME:-myproject}_beat
+    mem_limit: ${BEAT_MEM_LIMIT:-1g}
+    stop_grace_period: 30s
     command: >
       celery -A app beat --loglevel=INFO
       --scheduler django_celery_beat.schedulers:DatabaseScheduler
@@ -132,11 +154,11 @@ services:
         condition: service_healthy
 
 networks:
-  app_network:
-    name: ${COMPOSE_PROJECT_NAME:-myproject}_network
+  app_net:
+    name: ${COMPOSE_PROJECT_NAME:-myproject}_net
     driver: bridge
 
 volumes:
   postgres_data:
   redis_data:
-  media:
+  media_data:

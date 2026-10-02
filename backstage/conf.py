@@ -76,6 +76,19 @@ def get_tab_descriptions(model: type) -> dict[str, str]:
     return {str(tab): str(text) for tab, text in raw.items()}
 
 
+def get_inline_hub_options(parent_model: type, child_model: type) -> dict:
+    configured = get_config().get("INLINE_HUB") or {}
+    parent_key = parent_model.__name__
+    child_key = child_model.__name__
+    raw = configured.get(parent_key) or configured.get(parent_key.lower())
+    if not isinstance(raw, dict):
+        return {}
+    options = raw.get(child_key) or raw.get(child_key.lower())
+    if not isinstance(options, dict):
+        return {}
+    return dict(options)
+
+
 def get_model_label(model: type, *, plural: bool = True) -> str:
     key = model.__name__.lower()
     override = get_config().get("MODEL_LABELS", {}).get(key)

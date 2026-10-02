@@ -17,9 +17,9 @@ _aws_secret = BASE_DIR / ".secrets" / "aws.secret"
 if _aws_secret.exists():
     env.read_env(path=str(_aws_secret))
 
-APP_URL = env("APP_URL", default="http://localhost:8000")
+BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
+BACKEND_DOMAIN = urlparse(BACKEND_URL).netloc
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
-APP_DOMAIN = urlparse(APP_URL).netloc
 
 # =============================================================================
 # Project defaults
@@ -55,6 +55,7 @@ DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = ["*"] if DEBUG else env.list("ALLOWED_HOSTS", default=DEFAULT_ALLOWED_HOSTS)
 
 ROOT_URLCONF = "app.urls"
+# Docker: Gunicorn → app.wsgi (default); optional Uvicorn → app.asgi (see docker-compose.yml web command).
 WSGI_APPLICATION = "app.wsgi.application"
 ASGI_APPLICATION = "app.asgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

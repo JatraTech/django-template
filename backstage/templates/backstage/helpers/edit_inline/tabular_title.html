@@ -1,6 +1,7 @@
 {% load admin_modify admin_urls i18n %}
 
-{% if inline_admin_form.original or inline_admin_form.show_url %}
+{% if inline_admin_formset.opts.inline_mode == "hub" %}
+{% elif inline_admin_form.original or inline_admin_form.show_url %}
  <tr class="border-b border-border dark:border-border bg-base-50 dark:bg-white/[.02] lg:bg-transparent lg:border-0 dark:lg:bg-transparent!">
  <td colspan="{{ inline_admin_form|cell_count }}">
  {% if inline_admin_formset.opts.show_title %}
