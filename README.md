@@ -74,8 +74,8 @@ uv run python manage.py createsuperuser
 
 # Run services (separate terminals)
 uv run python manage.py runserver 8000
-uv run celery -A app worker --loglevel=INFO
-uv run celery -A app beat --loglevel=INFO
+uv run celery -A app.celery:celery_app worker --loglevel=INFO
+uv run celery -A app.celery:celery_app beat --loglevel=INFO
 ```
 
 ## Customizing for a New Project
@@ -131,7 +131,7 @@ If `HOST_FORWARD_APP_PORT` is not `8000`, update `CORS_ALLOWED_ORIGINS`, `CSRF_T
 |------|-----------|--------|
 | **Required (every project)** | `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `DB_*`, `REDIS_URL`, `FRONTEND_URL`, `BACKEND_URL`, `DEFAULT_FROM_EMAIL` | Copy from `.env.example` |
 | **Docker Compose** | `COMPOSE_PROJECT_NAME`, `HOST_*`, `*_MEM_LIMIT`, Gunicorn/Celery worker vars | Ignored if you run Django without Compose |
-| **Optional features** | `USE_S3_STORAGE` + `AWS_*`, `CHANNELS_ENABLED`, `EMAIL_RECIPIENTS_OVERRIDE`, `GOOGLE_*`, `OPENAI_*` | See optional dependency groups and sections below |
+| **Optional features** | `USE_S3_STORAGE` + `AWS_*`, `CHANNELS_ENABLED`, `EMAIL_BACKEND`, `EMAIL_RECIPIENTS_OVERRIDE`, `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_TENANT_ID`, `OPENAI_*` | See [Email](#email-console--gmail--microsoft-graph) and optional dependency groups below |
 
 Trim unused core dependencies (for example `polars` / `styleframe`) only if you remove the Excel export mixins that import them.
 
@@ -154,6 +154,22 @@ CACHE_REDIS_URL=redis://localhost:6379/2
 CHANNELS_REDIS_URL=redis://localhost:6379/3
 ```
 
+### Email (console / Gmail / Microsoft Graph)
+
+By default, `EMAIL_BACKEND` is Django’s **console** backend (messages print to stdout; no real sends). Set `EMAIL_BACKEND` in `.env` to use a production provider.
+
+| Backend | `EMAIL_BACKEND` value | Setup |
+|---------|----------------------|--------|
+| Console (default) | *(omit or use default in settings)* | None |
+| Gmail | `app.utils.backends.email.gmail.GmailBackend` | OAuth: Desktop client JSON at `.secrets/google_client_secret.json`, token at `.secrets/google_token.json`. Run `python manage.py gmail_oauth_token` once (re-run if refresh fails). Set `DEFAULT_FROM_EMAIL` to the signed-in Gmail address. Uses Celery when a worker is running. |
+| Microsoft Graph | `app.utils.backends.email.graph.GraphEmailBackend` | Azure app (public client): `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_TENANT_ID`. Token cache at `.secrets/ms_graph_msal_cache.json` (same pattern as Gmail credentials). Run `python manage.py graph_auth` once, then again if silent token refresh fails. |
+
+For staging, set `EMAIL_RECIPIENTS_OVERRIDE` to a comma-separated list so **Gmail and Graph** only deliver to those addresses.
+
+When a Celery worker is running (or `CELERY_TASK_ALWAYS_EAGER=true` in tests), both Gmail and Graph backends queue sends via `send_gmail_emails` / `send_graph_emails` tasks. If no worker is reachable, **web** sends synchronously in-process (same secrets required). Silent OAuth refresh updates token files under `.secrets` when the mount is writable (Compose uses `:rw` on **web** and **worker**). Populate `.secrets/` on the host before using Gmail or Graph in Compose.
+
+Projects migrated from **caissak12-backend** should use `app.utils.backends.email.graph.GraphEmailBackend` instead of `app.email.graph_backend.GraphEmailBackend`.
+
 ### Docker Compose
 
 Compose uses shared anchors (`x-common-env`, `x-common-runtime`, `x-common-service`) — customize via `.env`:
@@ -167,6 +183,8 @@ HOST_BIND_ADDRESS=127.0.0.1
 ```
 
 Inside Docker, `DB_HOST=db` and `REDIS_URL=redis://redis:6379` are set automatically.
+
+For Gmail or Microsoft Graph mail in Compose, add OAuth/MSAL files under [`.secrets/`](.secrets/) on the host (gitignored); `docker-compose.yml` mounts them at `/app/.secrets` on **web** and **worker** (`:rw` so refreshed tokens persist). `.secrets/` is excluded from Docker image builds (see `.dockerignore`).
 
 **Compose conventions**
 

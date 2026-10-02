@@ -1,0 +1,11 @@
+{
+  "token": "ya29.a0AdMD6Eg3FKdE_QRaxLYEYiSKDuKtArbzMqa66UWLyxnIEHIRdcVtoZnhTXq3lwh3imquXWGeyIqwYd8CyaljNLNdbQq3BpYPS9I_OGBZHEBhtOVWBN9qMUw5zPZkwvv4RtyxJYY2Aprm27XXclJPkJGEjx1NkvDVuANypsx1Cr33j9dgOEil3UMBjumM41m7KIu76WoaCgYKAb4SARcSFQHGX2MinBDaPrl27LcPQznd5UULrA0206",
+  "refresh_token": "1//0g8F5_eb4yb2HCgYIARAAGBASNwF-L9IrIUrwdaZozkCTDwsJUhZZhmgxovaltyQuFetyjCxK9AVNYgmTjN1loqOU5zyiUFsKyQA",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "client_id": "534037048810-nvj1b8eb83ah9euh8527rdvphse382le.apps.googleusercontent.com",
+  "client_secret": "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",
+  "scopes": ["https://www.googleapis.com/auth/gmail.send"],
+  "universe_domain": "googleapis.com",
+  "account": "",
+  "expiry": "2026-08-16T17:14:25Z"
+}

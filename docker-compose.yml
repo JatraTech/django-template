@@ -109,6 +109,7 @@ services:
     volumes:
       - media_data:/app/media
       - ./staticfiles:/app/staticfiles
+      - ./.secrets:/app/.secrets:rw
     ports:
       # App listens on 8000 in-container; host = HOST_FORWARD_APP_PORT. Set HOST_BIND_ADDRESS=0.0.0.0 for LAN access.
       - "${HOST_BIND_ADDRESS:-127.0.0.1}:${HOST_FORWARD_APP_PORT:-8000}:8000"
@@ -130,13 +131,14 @@ services:
     mem_limit: ${WORKER_MEM_LIMIT:-4g}
     stop_grace_period: 30s
     command: >
-      sh -c "celery -A app worker
+      sh -c "celery -A app.celery:celery_app worker
       --loglevel=INFO
       --concurrency=$${CELERY_WORKER_CONCURRENCY:-2}
       --max-tasks-per-child=$${CELERY_WORKER_MAX_TASKS_PER_CHILD:-20}
       --prefetch-multiplier=$${CELERY_WORKER_PREFETCH_MULTIPLIER:-1}"
     volumes:
       - media_data:/app/media
+      - ./.secrets:/app/.secrets:rw
     depends_on:
       web:
         condition: service_healthy
@@ -147,7 +149,7 @@ services:
     mem_limit: ${BEAT_MEM_LIMIT:-1g}
     stop_grace_period: 30s
     command: >
-      celery -A app beat --loglevel=INFO
+      celery -A app.celery:celery_app beat --loglevel=INFO
       --scheduler django_celery_beat.schedulers:DatabaseScheduler
     depends_on:
       web:

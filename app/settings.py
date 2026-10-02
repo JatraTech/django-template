@@ -354,9 +354,12 @@ if USE_S3_STORAGE:
 # =============================================================================
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 EMAIL_RECIPIENTS_OVERRIDE = env.list("EMAIL_RECIPIENTS_OVERRIDE", default=[])
-
-GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="")
-GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET", default="")
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+MS_GRAPH_CLIENT_ID = env("MS_GRAPH_CLIENT_ID", default="")
+MS_GRAPH_TENANT_ID = env("MS_GRAPH_TENANT_ID", default="")
 
 OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
 OPENAI_MODEL = env("OPENAI_MODEL", default="gpt-4o-mini")
