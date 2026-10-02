@@ -127,6 +127,14 @@ HOST_FORWARD_APP_PORT=8000
 
 If `HOST_FORWARD_APP_PORT` is not `8000`, update `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, and `BACKEND_URL` in `.env` to match the published API URL. See [`.env.example`](.env.example) (Docker / runtime and Celery sections) for `CELERY_WORKER_PREFETCH_MULTIPLIER`, optional `HOST_FORWARD_DB_PORT`, and `APP_UID` / `APP_GID`.
 
+| Tier | Variables | Notes |
+|------|-----------|--------|
+| **Required (every project)** | `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `DB_*`, `REDIS_URL`, `FRONTEND_URL`, `BACKEND_URL`, `DEFAULT_FROM_EMAIL` | Copy from `.env.example` |
+| **Docker Compose** | `COMPOSE_PROJECT_NAME`, `HOST_*`, `*_MEM_LIMIT`, Gunicorn/Celery worker vars | Ignored if you run Django without Compose |
+| **Optional features** | `USE_S3_STORAGE` + `AWS_*`, `CHANNELS_ENABLED`, `EMAIL_RECIPIENTS_OVERRIDE`, `GOOGLE_*`, `OPENAI_*` | See optional dependency groups and sections below |
+
+Trim unused core dependencies (for example `polars` / `styleframe`) only if you remove the Excel export mixins that import them.
+
 ### Redis DB Registry
 
 One Redis instance, logical separation by DB index:
@@ -185,7 +193,7 @@ Older forks used volume key `media` and network name `{name}_network`. After pul
 1. Install dependencies:
 
 ```bash
-uv add channels channels-redis daphne
+uv sync --group channels
 ```
 
 2. Add `"channels"` to `INSTALLED_APPS` in `app/settings.py`
@@ -193,6 +201,14 @@ uv add channels channels-redis daphne
 4. Configure ASGI routing in `app/asgi.py`
 
 Redis DB `/3` is reserved for the channel layer when enabled.
+
+### Optional: Loki logging
+
+Install the handler dependency, then add a Loki handler to `LOGGING` in `app/settings.py`:
+
+```bash
+uv sync --group observability
+```
 
 ## Production deploy (GitHub Actions)
 

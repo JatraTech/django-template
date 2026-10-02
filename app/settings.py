@@ -353,6 +353,14 @@ if USE_S3_STORAGE:
 # Communications
 # =============================================================================
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
+EMAIL_RECIPIENTS_OVERRIDE = env.list("EMAIL_RECIPIENTS_OVERRIDE", default=[])
+
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="")
+GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET", default="")
+
+OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
+OPENAI_MODEL = env("OPENAI_MODEL", default="gpt-4o-mini")
+OPENAI_EMBEDDING_MODEL = env("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
 
 
 # =============================================================================

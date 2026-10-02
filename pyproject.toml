@@ -30,7 +30,6 @@ dependencies = [
     "polars>=1.34.0",
     "psycopg2-binary>=2.9.10",
     "pydantic>=2.11.10",
-    "python-logging-loki>=0.3.1",
     "redis>=5.2.1",
     "requests>=2.32.5",
     "styleframe>=4.2",
@@ -45,8 +44,17 @@ dev = [
     "ipykernel>=6.30.1",
     "mypy>=1.11",
     "pytest>=8.3",
+    "pytest-cov>=5.0",
     "pytest-django>=4.9",
     "ruff>=0.6",
+]
+channels = [
+    "channels>=4.0",
+    "channels-redis>=4.2",
+    "daphne>=4.0",
+]
+observability = [
+    "python-logging-loki>=0.3.1",
 ]
 
 [tool.pytest.ini_options]
