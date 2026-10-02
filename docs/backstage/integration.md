@@ -27,7 +27,7 @@ path("admin/", admin.site.urls),
 python manage.py migrate backstage
 ```
 
-Apply migrations after upgrading the package (includes `0002_backfill_branding_from_config` for existing Admin appearance rows, and `0003_backstagesettings_favicon_light` for letterboxed tab icons from the light logo). If a logo was uploaded before upgrading, run `python manage.py regenerate_admin_favicon` once.
+Apply migrations after upgrading the package (includes `0002_backfill_branding_from_config` for existing Admin appearance rows, and `0003_backstagesettings_favicon_light`, which backfills letterboxed tab icons from existing `logo_light` files). New or replaced logos generate `favicon_light` automatically when Admin appearance is saved.
 
 Details: [guides/quickstart.md](guides/quickstart.md).
 
