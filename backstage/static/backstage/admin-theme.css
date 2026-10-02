@@ -768,7 +768,7 @@ body:not(.popup) #main {
   --backstage-footer-bar-padding-block: 0.5rem;
   --backstage-control-min-height: 2.25rem;
   --backstage-table-header-height: 2.25rem;
-  --backstage-table-cell-padding-y: 0.5rem;
+  --backstage-table-cell-padding-y: 0.625rem;
   --backstage-table-cell-padding-x: 1rem;
   --backstage-row-action-size: 1.75rem;
   /* Reserve space for sticky #submit-row (bar + sm buttons + scroll buffer) */
@@ -811,6 +811,24 @@ body.change-list #content-main {
 
 #main .backstage-control-height {
   box-sizing: border-box;
+  min-height: var(--backstage-control-min-height);
+}
+
+#changelist-actions .changelist-action-select > div {
+  width: 100%;
+  max-width: 14rem;
+  flex-grow: 0;
+  min-height: var(--backstage-control-min-height);
+  display: flex;
+  align-items: center;
+}
+
+#changelist-actions select {
+  width: 100%;
+}
+
+#changelist-actions .actions > .backstage-control,
+#changelist-actions button[name="index"] {
   min-height: var(--backstage-control-min-height);
 }
 

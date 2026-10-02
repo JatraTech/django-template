@@ -1,5 +1,10 @@
 # Backstage docs changelog
 
+## 2026-10-02 (changelist and favicon)
+
+- **Changelist bulk actions:** Django-style always-visible action row (select + Go + selection counter); compact toolbar CSS; slightly taller table rows.
+- **Admin tab icon:** Auto-generates letterboxed 32×32 PNG `favicon_light` from `logo_light` on save; migration `0003_backstagesettings_favicon_light`; management command `regenerate_admin_favicon`.
+
 ## 2026-10-02 (package sync)
 
 - **Package re-aligned** with Caissa K12, BPI, and Sotherly: hub inlines, `INLINE_RELATIONS` compiler, `primary_tab_slug` (hub tab merged into parent fieldset tabs), scrollable fieldset tabs with horizontal wheel scroll.

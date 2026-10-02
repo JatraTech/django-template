@@ -82,3 +82,38 @@ class ResolveSidebarTextTests(TestCase):
         self.assertEqual(obj.site_title, "Seeded Title")
         self.assertEqual(obj.site_header, "Seeded Header")
         self.assertEqual(obj.site_subheader, "Seeded Subheader")
+
+
+class ResolveFaviconsTests(TestCase):
+    def setUp(self):
+        clear_backstage_settings_cache()
+        ensure_backstage_settings()
+
+    def test_resolve_favicons_uses_letterboxed_favicon_not_full_logo(self):
+        from io import BytesIO
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        from backstage.branding import resolve_favicons
+
+        png = BytesIO()
+        Image.new("RGBA", (200, 50), color=(0, 128, 255, 255)).save(png, format="PNG")
+        logo_file = SimpleUploadedFile("wide-logo.png", png.getvalue(), content_type="image/png")
+
+        obj = BackstageSettings.objects.get(pk=1)
+        if obj.favicon_light:
+            obj.favicon_light.delete(save=False)
+        obj.logo_light = logo_file
+        obj.save()
+        obj.refresh_from_db()
+        clear_backstage_settings_cache()
+
+        self.assertTrue(obj.favicon_light.name)
+        favicons = resolve_favicons()
+        self.assertIsNotNone(favicons)
+        self.assertEqual(len(favicons), 1)
+        self.assertEqual(favicons[0]["type"], "image/png")
+        self.assertEqual(favicons[0]["sizes"], "32x32")
+        self.assertEqual(favicons[0]["href"], obj.favicon_light.url)
+        self.assertNotEqual(favicons[0]["href"], obj.logo_light.url)

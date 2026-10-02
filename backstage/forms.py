@@ -51,26 +51,7 @@ class ActionForm(forms.Form):
         label="",
         widget=BackstageAdminSelectWidget(
             {
-                "class": " ".join(
-                    [
-                        "group-[.changelist-actions]:appearance-none",
-                        "group-[.changelist-actions]:!bg-white/20",
-                        "group-[.changelist-actions]:font-medium",
-                        "group-[.changelist-actions]:grow",
-                        "group-[.changelist-actions]:px-2",
-                        "group-[.changelist-actions]:py-1",
-                        "group-[.changelist-actions]:pr-8",
-                        "group-[.changelist-actions]:rounded-default",
-                        "group-[.changelist-actions]:!text-current",
-                        "group-[.changelist-actions]:truncate",
-                        "group-[.changelist-actions]:!outline-primary-400",
-                        "group-[.changelist-actions]:dark:!outline-primary-700",
-                        "group-[.changelist-actions]:*:text-base-700",
-                        "group-[.changelist-actions]:lg:w-72",
-                    ]
-                ),
                 "aria-label": _("Select action to run"),
-                "x-model": "action",
             }
         ),
     )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 from typing import Any
 
 from django.conf import settings
@@ -95,13 +96,14 @@ def resolve_logo() -> dict[str, str] | None:
 
 def resolve_favicons() -> list[dict[str, str]] | None:
     settings_obj = get_backstage_settings_or_none()
-    if settings_obj is not None and settings_obj.logo_light:
+    if settings_obj is not None and settings_obj.favicon_light:
+        mime_type, _ = mimetypes.guess_type(settings_obj.favicon_light.name)
         return [
             {
                 "rel": "icon",
                 "sizes": "32x32",
-                "type": "image/webp",
-                "href": settings_obj.logo_light.url,
+                "type": mime_type or "image/png",
+                "href": settings_obj.favicon_light.url,
             },
         ]
 

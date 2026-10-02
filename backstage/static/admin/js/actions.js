@@ -65,6 +65,9 @@
       return el.checked;
     }).length;
     const counter = options.parent.querySelector(options.counterContainer);
+    if (!counter) {
+      return;
+    }
     // data-actions-icnt is defined in the generated HTML
     // and contains the total amount of objects in the queryset
     const actions_icnt = Number(counter.dataset.actionsIcnt);
@@ -81,6 +84,9 @@
       true
     );
     const allToggle = options.parent.querySelector(".action-toggle");
+    if (!allToggle) {
+      return;
+    }
     allToggle.checked = sel === actionCheckboxes.length;
     if (allToggle.checked) {
       showQuestion(options);
@@ -179,9 +185,11 @@
       });
     });
 
-    options.parent
-      .querySelector("button[name=index]")
-      .addEventListener("click", function (event) {
+    const runActionButton = options.parent.querySelector(
+      "button[name=index]"
+    );
+    if (runActionButton) {
+      runActionButton.addEventListener("click", function (event) {
         if (list_editable_changed) {
           const confirmed = confirm(
             gettext(
@@ -193,6 +201,7 @@
           }
         }
       });
+    }
 
     const el = options.parent.querySelector("button[name=_save], input[name=_save]");
 

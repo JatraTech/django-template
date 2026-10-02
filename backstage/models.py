@@ -59,6 +59,11 @@ class BackstageSettings(SingletonModel):
     )
     logo_light = models.ImageField(upload_to="backstage/", blank=True)
     logo_dark = models.ImageField(upload_to="backstage/", blank=True)
+    favicon_light = models.ImageField(
+        upload_to="backstage/",
+        blank=True,
+        help_text="Auto-generated from the light logo for browser tabs.",
+    )
     frontend_url = models.URLField(
         blank=True,
         default="",
@@ -74,3 +79,21 @@ class BackstageSettings(SingletonModel):
 
     def get_frontend_url(self) -> str:
         return self.frontend_url.rstrip("/")
+
+    def save(self, *args, **kwargs):
+        from backstage.favicon import regenerate_favicon_light
+
+        self.pk = 1
+        previous_logo_name = ""
+        if BackstageSettings.objects.filter(pk=1).exists():
+            previous_logo_name = (
+                BackstageSettings.objects.values_list("logo_light", flat=True).get(pk=1) or ""
+            )
+
+        new_logo_name = self.logo_light.name if self.logo_light else ""
+        logo_changed = previous_logo_name != new_logo_name
+
+        super().save(*args, **kwargs)
+
+        if logo_changed and regenerate_favicon_light(self):
+            super().save(update_fields=["favicon_light"])
