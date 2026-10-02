@@ -18,7 +18,6 @@ if _aws_secret.exists():
     env.read_env(path=str(_aws_secret))
 
 BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
-BACKEND_DOMAIN = urlparse(BACKEND_URL).netloc
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
 # =============================================================================
