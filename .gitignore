@@ -1,5 +1,7 @@
 # =============================================================================
 # All-in-one .gitignore — Django / React / Node / Python / Docker / AI Tools
+# Canonical file — copy to new repos wholesale. Do not ignore lockfiles
+# (bun.lock, uv.lock, package-lock.json, poetry.lock stay tracked).
 # =============================================================================
 
 # Environment & Secrets
@@ -56,6 +58,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+bun-debug.log*
 
 # Node / React / Frontend
 node_modules/
@@ -72,9 +75,11 @@ storybook-static/
 .turbo/
 .vercel/
 .netlify/
+.open-next/
 
 .cache/
 .vite/
+.swc/
 
 .env.local
 .env.development.local
@@ -87,6 +92,10 @@ coverage/
 .jest/
 
 *.tsbuildinfo
+next-env.d.ts
+
+.eslintcache
+.prettiercache
 
 .npm
 .yarn/cache
@@ -95,6 +104,14 @@ coverage/
 .yarn/install-state.gz
 .pnp.*
 .yarn-integrity
+
+# E2E / browsers
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+cypress/videos/
+cypress/screenshots/
 
 # Python / Django
 __pycache__/
@@ -157,12 +174,23 @@ media/
 # Docker
 docker-compose.override.yml
 postgres-data/
+redis-data/
 
 # Database / Backups
 backups/
 *.sql
 *.dump
 *.backup
+
+# Docs (MkDocs / static site generators)
+site/
+_site/
+
+# Infra (optional; harmless if unused)
+.terraform/
+*.tfstate
+*.tfstate.*
+.wrangler/
 
 # Temporary Files
 *.bak
