@@ -18,7 +18,7 @@ jobs:
     name: Deploy Backend (Docker)
     runs-on: ubuntu-latest
     environment: Staging
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Deploy backend to staging server
@@ -27,6 +27,7 @@ jobs:
           host: ${{ secrets.STAGING_REMOTE_HOST }}
           username: ${{ secrets.STAGING_REMOTE_USER }}
           key: ${{ secrets.STAGING_REMOTE_SSH_KEY }}
+          command_timeout: 30m
           script_stop: true
           script: |
             set -euo pipefail
