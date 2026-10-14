@@ -1,3 +1,4 @@
+import re
 import warnings
 from functools import update_wrapper
 from typing import Any, TypedDict
@@ -16,7 +17,7 @@ from django.contrib.contenttypes.admin import (
     GenericTabularInline as BaseGenericTabularInline,
 )
 from django.db.models import BLANK_CHOICE_DASH, Model
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import URLPattern, path
 from django.utils.safestring import SafeString, mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -45,6 +46,29 @@ checkbox = BackstageBooleanWidget(
     },
     lambda value: False,
 )
+
+_BACKSTAGE_TAB_SLUG_RE = re.compile(r"^[\w-]+$", re.ASCII)
+
+
+def _backstage_safe_tab_slug(value: str | None) -> str:
+    cleaned = (value or "").strip()
+    if not cleaned or not _BACKSTAGE_TAB_SLUG_RE.match(cleaned):
+        return ""
+    return cleaned
+
+
+def _backstage_tab_fragment_from_request(request: HttpRequest) -> str:
+    tab = _backstage_safe_tab_slug(request.POST.get("_backstage_active_tab"))
+    fieldset = _backstage_safe_tab_slug(request.POST.get("_backstage_active_fieldset_tab"))
+    first_fieldset = _backstage_safe_tab_slug(request.POST.get("_backstage_first_fieldset_tab"))
+
+    if tab and tab != "general":
+        return tab
+    if tab == "general" and fieldset:
+        if first_fieldset and fieldset == first_fieldset:
+            return ""
+        return f"general--{fieldset}"
+    return ""
 
 
 class ListFilterOptionsItem(TypedDict):
@@ -130,6 +154,25 @@ class ModelAdmin(
             self._display_autocomplete_fields_warnings(request)
 
         return response
+
+    def _append_backstage_tab_fragment(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        if "_continue" not in request.POST:
+            return response
+        if not isinstance(response, HttpResponseRedirect):
+            return response
+        fragment = _backstage_tab_fragment_from_request(request)
+        if not fragment:
+            return response
+        url = response.url.split("#", 1)[0]
+        return HttpResponseRedirect(f"{url}#{fragment}")
+
+    def response_change(self, request, obj):
+        response = super().response_change(request, obj)
+        return self._append_backstage_tab_fragment(request, response)
+
+    def response_add(self, request, obj, post_url_continue=None):
+        response = super().response_add(request, obj, post_url_continue)
+        return self._append_backstage_tab_fragment(request, response)
 
     def get_list_display(self, request: HttpRequest) -> list | tuple:
         list_display = super().get_list_display(request)

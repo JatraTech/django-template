@@ -1,68 +1,83 @@
 {% load backstage %}
 
 {% with tabs=adminform|tabs %}
- {% with hub_primary_inlines=inline_admin_formsets|hub_primary_tab_inlines %}
- {% if tabs or hub_primary_inlines %}
- {% with active_tab=tabs|primary_tabs_active:inline_admin_formsets %}
- <div class="{% fieldset_rows_classes %}" x-data="{ activeFieldsetTab: '{{ active_tab }}'}" x-show="activeTab == 'general'">
- <div class="border-b border-border">
- <div class="backstage-fieldset-tabs-scroll">
- <nav class="backstage-fieldset-tabs flex flex-row flex-nowrap items-center gap-1 *:font-medium *:text-important *:cursor-pointer *:relative *:py-2.5 *:px-3.5 *:shrink-0 *:whitespace-nowrap *:hover:text-primary-600 dark:*:hover:text-primary-500 [&>.active]:text-primary-600 dark:[&>.active]:text-primary-500 [&>.active]:after:absolute [&>.active]:after:content-[''] [&>.active]:after:bottom-0 [&>.active]:after:left-0 [&>.active]:after:right-0 [&>.active]:after:h-0.5 [&>.active]:after:bg-primary-600 dark:[&>.active]:after:bg-primary-500" role="tablist">
- {% for fieldset in tabs %}
- <a role="tab" href="#" x-on:click.prevent="activeFieldsetTab = '{{ fieldset.name|unicoded_slugify }}'" x-bind:class="activeFieldsetTab == '{{ fieldset.name|unicoded_slugify }}' && 'active'" x-bind:aria-selected="activeFieldsetTab == '{{ fieldset.name|unicoded_slugify }}' ? 'true' : 'false'">
- {{ fieldset.name }}
+{% with hub_primary_inlines=inline_admin_formsets|hub_primary_tab_inlines %}
+{% if tabs or hub_primary_inlines %}
+{% with active_tab=tabs|primary_tabs_active:inline_admin_formsets %}
+<div class="{% fieldset_rows_classes %}"
+    x-init="const ft = getCurrentFieldsetTab(); if (ft) { activeFieldsetTab = ft; } else { activeFieldsetTab = '{{ active_tab }}'; }"
+    x-show="activeTab == 'general'">
+    <input type="hidden" name="_backstage_active_fieldset_tab" x-bind:value="activeFieldsetTab">
+    {% if tabs %}
+    <input type="hidden" name="_backstage_first_fieldset_tab" value="{{ tabs.0.name|unicoded_slugify }}">
+    {% endif %}
+    <div class="border-b border-border">
+        <div class="backstage-fieldset-tabs-scroll">
+            <nav class="backstage-fieldset-tabs flex flex-row flex-nowrap items-center gap-1 *:font-medium *:text-important *:cursor-pointer *:relative *:py-2.5 *:px-3.5 *:shrink-0 *:whitespace-nowrap *:hover:text-primary-600 dark:*:hover:text-primary-500 [&>.active]:text-primary-600 dark:[&>.active]:text-primary-500 [&>.active]:after:absolute [&>.active]:after:content-[''] [&>.active]:after:bottom-0 [&>.active]:after:left-0 [&>.active]:after:right-0 [&>.active]:after:h-0.5 [&>.active]:after:bg-primary-600 dark:[&>.active]:after:bg-primary-500"
+                role="tablist">
+                {% for fieldset in tabs %}
+                <a role="tab" href="#general--{{ fieldset.name|unicoded_slugify }}"
+                    x-on:click.prevent="activeFieldsetTab = '{{ fieldset.name|unicoded_slugify }}'"
+                    x-bind:class="activeFieldsetTab == '{{ fieldset.name|unicoded_slugify }}' && 'active'"
+                    x-bind:aria-selected="activeFieldsetTab == '{{ fieldset.name|unicoded_slugify }}' ? 'true' : 'false'">
+                    {{ fieldset.name }}
 
- {% with error_count=fieldset|tabs_errors_count_anchored:inline_admin_formsets %}
- {% if error_count > 0 %}
- <span data-testid="error-count" class="bg-red-500 inline-flex font-semibold items-center justify-center leading-none rounded-full w-4 h-4 text-white relative text-center text-[11px] whitespace-nowrap uppercase">
- {{ error_count }}
- </span>
- {% endif %}
- {% endwith %}
- </a>
- {% endfor %}
+                    {% with error_count=fieldset|tabs_errors_count_anchored:inline_admin_formsets %}
+                    {% if error_count > 0 %}
+                    <span data-testid="error-count"
+                        class="bg-red-500 inline-flex font-semibold items-center justify-center leading-none rounded-full w-4 h-4 text-white relative text-center text-[11px] whitespace-nowrap uppercase">
+                        {{ error_count }}
+                    </span>
+                    {% endif %}
+                    {% endwith %}
+                </a>
+                {% endfor %}
 
- {% for inline in hub_primary_inlines %}
- <a role="tab" href="#" x-on:click.prevent="activeFieldsetTab = '{{ inline|hub_primary_tab_slug }}'" x-bind:class="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}' && 'active'" x-bind:aria-selected="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}' ? 'true' : 'false'">
- {% if inline.formset.max_num == 1 %}
- {{ inline.opts.verbose_name|capfirst }}
- {% else %}
- {{ inline.opts.verbose_name_plural|capfirst }}
- {% endif %}
+                {% for inline in hub_primary_inlines %}
+                <a role="tab" href="#general--{{ inline|hub_primary_tab_slug }}"
+                    x-on:click.prevent="activeFieldsetTab = '{{ inline|hub_primary_tab_slug }}'"
+                    x-bind:class="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}' && 'active'"
+                    x-bind:aria-selected="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}' ? 'true' : 'false'">
+                    {% if inline.formset.max_num == 1 %}
+                    {{ inline.opts.verbose_name|capfirst }}
+                    {% else %}
+                    {{ inline.opts.verbose_name_plural|capfirst }}
+                    {% endif %}
 
- {% with error_count=inline|hub_inline_errors_count %}
- {% if error_count > 0 %}
- <span data-testid="error-count" class="bg-red-500 inline-flex font-semibold items-center justify-center leading-none rounded-full w-4 h-4 text-white relative text-center text-[11px] whitespace-nowrap uppercase">
- {{ error_count }}
- </span>
- {% endif %}
- {% endwith %}
- </a>
- {% endfor %}
- </nav>
- </div>
- </div>
+                    {% with error_count=inline|hub_inline_errors_count %}
+                    {% if error_count > 0 %}
+                    <span data-testid="error-count"
+                        class="bg-red-500 inline-flex font-semibold items-center justify-center leading-none rounded-full w-4 h-4 text-white relative text-center text-[11px] whitespace-nowrap uppercase">
+                        {{ error_count }}
+                    </span>
+                    {% endif %}
+                    {% endwith %}
+                </a>
+                {% endfor %}
+            </nav>
+        </div>
+    </div>
 
- {% for fieldset in tabs %}
- {% with tab_slug=fieldset.name|unicoded_slugify %}
- <div class="tab-wrapper{% if fieldset.name %} fieldset-{{ tab_slug }}{% endif %}"
- x-show="activeFieldsetTab == '{{ tab_slug }}'" role="tabpanel">
- {% include 'admin/includes/fieldset.html' with fieldset_tab=1 %}
- {% for inline in inline_admin_formsets|inlines_anchored_to_tab:tab_slug %}
- {% include "backstage/helpers/edit_inline/hub_tabular_panel.html" with inline_admin_formset=inline %}
- {% endfor %}
- </div>
- {% endwith %}
- {% endfor %}
+    {% for fieldset in tabs %}
+    {% with tab_slug=fieldset.name|unicoded_slugify %}
+    <div class="tab-wrapper{% if fieldset.name %} fieldset-{{ tab_slug }}{% endif %}"
+        x-show="activeFieldsetTab == '{{ tab_slug }}'" role="tabpanel">
+        {% include 'admin/includes/fieldset.html' with fieldset_tab=1 %}
+        {% for inline in inline_admin_formsets|inlines_anchored_to_tab:tab_slug %}
+        {% include "backstage/helpers/edit_inline/hub_tabular_panel.html" with inline_admin_formset=inline %}
+        {% endfor %}
+    </div>
+    {% endwith %}
+    {% endfor %}
 
- {% for inline in hub_primary_inlines %}
- <div class="tab-wrapper {{ inline|hub_primary_tab_slug }}"
- x-show="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}'">
- {% include "backstage/helpers/edit_inline/hub_tabular_panel.html" with inline_admin_formset=inline %}
- </div>
- {% endfor %}
- </div>
- {% endwith %}
- {% endif %}
- {% endwith %}
+    {% for inline in hub_primary_inlines %}
+    <div class="tab-wrapper {{ inline|hub_primary_tab_slug }}"
+        x-show="activeFieldsetTab == '{{ inline|hub_primary_tab_slug }}'">
+        {% include "backstage/helpers/edit_inline/hub_tabular_panel.html" with inline_admin_formset=inline %}
+    </div>
+    {% endfor %}
+</div>
+{% endwith %}
+{% endif %}
+{% endwith %}
 {% endwith %}

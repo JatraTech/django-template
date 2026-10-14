@@ -24,11 +24,26 @@ document.addEventListener("alpine:initialized", () => {
 	scrollSidebarNav();
 });
 
+function getCurrentFieldsetTab() {
+	const fragment = window.location.hash?.replace("#", "") || "";
+
+	if (!fragment.startsWith("general--")) {
+		return null;
+	}
+
+	const slug = fragment.slice("general--".length);
+	return slug || null;
+}
+
 function getCurrentTab() {
-	const fragment = window.location.hash?.replace("#", "");
+	const fragment = window.location.hash?.replace("#", "") || "";
 
 	if (!fragment) {
 		return null;
+	}
+
+	if (fragment.startsWith("general--")) {
+		return "general";
 	}
 
 	if (!document.getElementById(`${fragment}-group`)) {
@@ -36,6 +51,25 @@ function getCurrentTab() {
 	}
 
 	return fragment;
+}
+
+function backstageChangeFormAction(activeTab, activeFieldsetTab) {
+	const base = `${window.location.pathname}${window.location.search}`;
+
+	if (activeTab && activeTab !== "general") {
+		return `${base}#${activeTab}`;
+	}
+
+	if (activeTab === "general" && activeFieldsetTab) {
+		const firstFieldsetTab = document.querySelector(
+			'input[name="_backstage_first_fieldset_tab"]',
+		)?.value;
+		if (!firstFieldsetTab || activeFieldsetTab !== firstFieldsetTab) {
+			return `${base}#general--${activeFieldsetTab}`;
+		}
+	}
+
+	return base;
 }
 
 /*************************************************************
