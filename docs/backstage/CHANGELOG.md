@@ -1,5 +1,23 @@
 # Backstage docs changelog
 
+## 2026-10-30 (admin activity log)
+
+- **Admin activity log:** Dashboard Recent activity shows change summaries, IP (when captured), and superuser-wide feed; **System → Admin activity** read-only changelist (action type, Open link, filters). Migrations `0004_adminlogentrymeta`, `0005_adminactivitylog`.
+- **Host wiring:** Add `backstage.middleware.AdminRequestMiddleware` after auth; optional `BACKSTAGE["TRUSTED_PROXY_COUNT"]` (env) for production client IP behind nginx; allowlist `backstage.AdminActivityLog` in `NAV_GROUPS["system"].models`.
+- **Upgrading BPI / Sotherly / other vendored copies:** Copy template `backstage/`, run `migrate backstage`, add middleware + nav + env (same as Caissa K12 `backstage_host` system block).
+
+## 2026-10-23 (sidebar permissions)
+
+- **Sidebar and tabs:** Nav items respect `ModelAdmin.has_view_permission` (same as Django app list and dashboard widgets). Auto-built `NAV_GROUPS` items include a `model` reference; manual `SIDEBAR.navigation` entries can set `"model"` or rely on admin URL resolution.
+- **Empty groups:** Sidebar groups with no permitted items are omitted server-side.
+
+## 2026-10-23 (custom admins and nav tabs)
+
+- **Changelist row actions:** `backstage.admin.ModelAdmin` defaults `changelist_row_edit` and `changelist_row_delete` to `True` so custom admins match autodiscovered behavior.
+- **Admin appearance:** `custom_css` on Backstage settings uses `BackstageAdminTextareaWidget` (consistent padding with other admin textareas).
+- **Sidebar tab highlight:** `_admin_path_matches` compares tab link query strings via `request_query` (fixes active nav when change-form tabs use `?tab=…`).
+- **Docs:** Troubleshooting for raw Django widgets and primary link buttons in changelists; `host_admin_utils.example.py` for unregister/re-register patterns.
+
 ## 2026-10-02 (changelist and favicon)
 
 - **Changelist bulk actions:** Django-style always-visible action row (select + Go + selection counter); compact toolbar CSS; slightly taller table rows.

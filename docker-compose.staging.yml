@@ -1,6 +1,6 @@
 # Staging stack — separate project name / image tag from production on the same host.
 # Use with: docker compose -f docker-compose.staging.yml up -d
-# Set COMPOSE_PROJECT_NAME in .env (e.g. myproject-staging) on the staging server.
+# Set COMPOSE_PROJECT_NAME in .env (e.g. myproject-staging) — see .env.example staging hints.
 
 name: ${COMPOSE_PROJECT_NAME:-myproject}-staging
 
@@ -16,7 +16,7 @@ x-common-env: &common_env
   DB_PASSWORD: ${DB_PASSWORD:-postgres}
   DB_HOST: db
   DB_PORT: "5432"
-  REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+  REDIS_URL: redis://redis:6379
   RUN_MIGRATIONS: "false"
   RUN_COLLECTSTATIC: "false"
 
@@ -124,10 +124,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      interval: 15s
+      timeout: 30s
+      retries: 6
+      start_period: 600s
 
   worker:
     <<: *common_runtime

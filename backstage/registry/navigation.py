@@ -125,6 +125,7 @@ def get_sidebar_navigation(request) -> list[dict]:
                         "title": get_model_label(model),
                         "icon": _icon_for_model(model),
                         "link": _model_admin_link(model),
+                        "model": model,
                     }
                     for model in models
                 ],

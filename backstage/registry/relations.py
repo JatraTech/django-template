@@ -51,11 +51,11 @@ def _fk_to_parent(child_model: type[models.Model], parent_model: type[models.Mod
     if fk_name:
         return fk_name
     matches: list[str] = []
-    for field in child_model._meta.get_fields():
-        if not isinstance(field, models.ForeignKey) or field.auto_created:
+    for model_field in child_model._meta.get_fields():
+        if not isinstance(model_field, models.ForeignKey) or model_field.auto_created:
             continue
-        if field.remote_field.model is parent_model:
-            matches.append(field.name)
+        if model_field.remote_field.model is parent_model:
+            matches.append(model_field.name)
     if len(matches) == 1:
         return matches[0]
     if len(matches) > 1:
@@ -182,7 +182,7 @@ def compile_inline_relations(
         key = _relation_key(parent_name, child_name)
         if key in hub_keys:
             result.warnings.append(
-                f'INLINE_RELATIONS {parent_name} → {child_name} shadows INLINE_HUB; prefer INLINE_RELATIONS only.',
+                f"INLINE_RELATIONS {parent_name} → {child_name} shadows INLINE_HUB; prefer INLINE_RELATIONS only.",
             )
         by_parent.setdefault(parent_name, []).append(entry)
 

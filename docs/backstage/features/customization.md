@@ -44,6 +44,8 @@ Pass via `BACKSTAGE["ADMIN_OVERRIDES"]`. Factory applies with `setattr` on the g
 | `changelist_row_delete` | True | Delete confirmation link |
 | `changelist_editable_ux` | True | Hint strip when `list_editable` set |
 
+Defaults apply to autodiscovered admins (`registry/base.py`) and to custom subclasses of `backstage.admin.ModelAdmin`. For read-only changelists, set `changelist_row_edit = False` and/or `has_change_permission` to return `False` for the relevant request.
+
 Set `changelist_editable_ux = False` to hide hint only.
 
 ## 2. Editor metadata
@@ -88,6 +90,15 @@ Or in `AppConfig.ready()` (same unregister/register pattern).
 ## 5. Full manual nav
 
 Set `BACKSTAGE["SIDEBAR"]["navigation"]` to a non-empty manual nav list to replace auto-built sidebar.
+
+Each item can include:
+
+| Key | Purpose |
+|-----|---------|
+| `model` | Optional model class for permission checks (`has_view_permission`) |
+| `permission` | Optional extra callback (AND with model/view permission) |
+
+Admin URLs without `model` are matched to a registered model when possible.
 
 ## 6. Skip autodiscover for an app
 

@@ -78,6 +78,7 @@ CONFIG_DEFAULTS = {
         },
     },
     "GLOBAL_CALLBACK": None,
+    "TRUSTED_PROXY_COUNT": None,
     "DASHBOARD_CALLBACK": None,
     "DASHBOARD_TEMPLATE": None,
     "DASHBOARD": {
@@ -87,7 +88,12 @@ CONFIG_DEFAULTS = {
         "stats": [],
         "quick_actions": [],
         "my_drafts": {"limit": 10},
-        "recent_activity": {"limit": 10},
+        "recent_activity": {
+            "limit": 10,
+            "show_change_detail": True,
+            "show_ip": True,
+            "full_list_url_name": "admin:backstage_adminactivitylog_changelist",
+        },
         "show_app_list": False,
     },
     "ENVIRONMENT": None,

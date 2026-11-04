@@ -27,7 +27,7 @@ path("admin/", admin.site.urls),
 python manage.py migrate backstage
 ```
 
-Apply migrations after upgrading the package (includes `0002_backfill_branding_from_config` for existing Admin appearance rows, and `0003_backstagesettings_favicon_light`, which backfills letterboxed tab icons from existing `logo_light` files). New or replaced logos generate `favicon_light` automatically when Admin appearance is saved.
+Apply migrations after upgrading the package (includes `0002_backfill_branding_from_config` for existing Admin appearance rows, `0003_backstagesettings_favicon_light` for tab icons, and **`0004_adminlogentrymeta` / `0005_adminactivitylog`** for admin activity IP metadata and the Admin activity proxy). New or replaced logos generate `favicon_light` automatically when Admin appearance is saved.
 
 Details: [guides/quickstart.md](guides/quickstart.md).
 
@@ -79,7 +79,7 @@ For headless/public APIs, copy [examples/host_cms_api_utils.py](examples/host_cm
 
 Full contract: [guides/host-contract.md](guides/host-contract.md).
 
-**Page-child models (sidebar):** If a model has a single foreign key to a parent page in the same app (ignoring audit fields like `created_by` / `updated_by`), Backstage treats it as inline-only: it is not registered as a standalone admin and does not appear in the auto-built sidebar. Edit those rows on the parent change form tabs instead. To order and allowlist sidebar items, set optional `models` on each entry in `NAV_GROUPS` (e.g. `"website.HomePage"`).
+**Page-child models (sidebar):** If a model has a single foreign key to a parent page in the same app (ignoring audit fields like `created_by` / `updated_by`), Backstage treats it as inline-only: it is not registered as a standalone admin and does not appear in the auto-built sidebar. Edit those rows on the parent change form tabs instead. To order and allowlist sidebar items, set optional `models` on each entry in `NAV_GROUPS` (e.g. `"website.HomePage"`). That list controls **which registered models can appear** and in what order; each user only sees links their `ModelAdmin.has_view_permission` allows (custom admins included).
 
 For extra inline classes, fieldsets, or ordering on a parent, use `ADMIN_OVERRIDES` in `backstage_host.py` (e.g. `"inlines"`, `"fieldsets"`). See [features/customization.md](features/customization.md).
 
@@ -95,6 +95,25 @@ Declare parent → child edges in `BACKSTAGE["INLINE_RELATIONS"]` (export a list
 
 Set **`primary_tab_slug`** on a hub entry to anchor the hub panel on a parent fieldset tab (same tab bar as `classes: ["tab"]` fieldsets). See [reference/configuration.md](reference/configuration.md).
 
+### Admin activity log
+
+The package registers **Admin activity** (read-only changelist over Django admin `LogEntry` rows) and enriches the dashboard **Recent activity** widget.
+
+**Host steps:**
+
+1. After upgrading `backstage/`, run `python manage.py migrate backstage` (migrations `0004`–`0005`).
+2. Add middleware **after** `AuthenticationMiddleware`:
+
+   ```python
+   "backstage.middleware.AdminRequestMiddleware",
+   ```
+
+3. Optional production IP logging: set `BACKSTAGE["TRUSTED_PROXY_COUNT"]` to the number of trusted reverse proxies in front of Django (often `1` for nginx → Docker). Unset locally.
+4. In `NAV_GROUPS`, allowlist **`backstage.AdminActivityLog`** under System (with Users, Groups, Admin appearance). Set `MODEL_ICONS` / `MODEL_LABELS` for `adminactivitylog` if desired.
+5. In `DASHBOARD.recent_activity`, set `full_list_url_name` to `"admin:backstage_adminactivitylog_changelist"` (default in package `CONFIG_DEFAULTS`).
+
+**Behavior:** Staff see their own actions; superusers see all. Historical rows keep change text; IP appears only for edits after deploy. Object history shows IP when metadata exists.
+
 ## 4. Editor copy policy
 
 | Put copy on… | When |
@@ -109,7 +128,7 @@ Do not duplicate the same text on model and meta.
 
 1. `ADMIN_OVERRIDES` in `backstage_host.py`
 2. Editor meta / tab descriptions in the same file
-3. Unregister + custom `ModelAdmin` only when needed — [features/customization.md](features/customization.md)
+3. Unregister + custom `ModelAdmin` only when needed — [features/customization.md](features/customization.md). Copy [examples/host_admin_utils.example.py](examples/host_admin_utils.example.py) into your project for `replace_admin`, hub inline helpers, and `apply_host_overrides`.
 
 ## 6. Preview (optional)
 

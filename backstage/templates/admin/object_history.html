@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls backstage_list %}
+{% load i18n admin_urls backstage_list backstage %}
 
 {% block content %}
  {% if action_list %}
@@ -18,6 +18,10 @@
  <th class="{% table_header_cell_classes %}">
  {% trans 'Action' %}
  </th>
+
+ <th class="{% table_header_cell_classes %}">
+ {% trans 'IP address' %}
+ </th>
  </tr>
  </thead>
 
@@ -34,6 +38,10 @@
 
  <td>
  {{ action.get_change_message }}
+ </td>
+
+ <td>
+ {{ action|log_entry_ip }}
  </td>
  </tr>
  {% endfor %}

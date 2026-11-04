@@ -6,6 +6,8 @@ Backstage is a self-contained Django admin package. Host projects add models; Ba
 
 **This repo:** live reference host — vendored [`backstage/`](../../backstage/), demo [`sample/`](../../sample/) app, [`app/backstage_host.py`](../../app/backstage_host.py). Run `python manage.py check_backstage_integration` from the project root.
 
+General repo layout for Django APIs and SPAs (not Backstage-specific): [project-documentation.md](../project-documentation.md).
+
 ## Reading order
 
 | Step | Document | When to read |

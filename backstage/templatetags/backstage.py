@@ -595,6 +595,13 @@ def querystring_params(context: RequestContext, query_key: str, query_value: str
     return result.urlencode()
 
 
+def _admin_model_for_urls(opts: Options | None, obj: Model) -> type[Model]:
+    """Use ModelAdmin opts for URL names (proxy models keep concrete _meta on instances)."""
+    if opts is not None:
+        return opts.model
+    return obj.__class__
+
+
 @register.simple_tag(takes_context=True)
 def header_title(context: RequestContext) -> str:
     parts = []
@@ -610,38 +617,42 @@ def header_title(context: RequestContext) -> str:
         )
 
         if (original := context.get("original")) and not isinstance(original, str):
+            url_model = _admin_model_for_urls(opts, original)
+            url_meta = url_model._meta
             parts.append(
                 {
                     "link": reverse_lazy(
-                        f"{current_app}:{original._meta.app_label}_{original._meta.model_name}_changelist"
+                        f"{current_app}:{url_meta.app_label}_{url_meta.model_name}_changelist"
                     ),
-                    "title": get_model_label(original.__class__),
+                    "title": get_model_label(url_model),
                 }
             )
 
             parts.append(
                 {
                     "link": reverse_lazy(
-                        f"{current_app}:{original._meta.app_label}_{original._meta.model_name}_change",
+                        f"{current_app}:{url_meta.app_label}_{url_meta.model_name}_change",
                         args=[original.pk],
                     ),
                     "title": original,
                 }
             )
         elif object := context.get("object"):
+            url_model = _admin_model_for_urls(opts, object)
+            url_meta = url_model._meta
             parts.append(
                 {
                     "link": reverse_lazy(
-                        f"{current_app}:{object._meta.app_label}_{object._meta.model_name}_changelist"
+                        f"{current_app}:{url_meta.app_label}_{url_meta.model_name}_changelist"
                     ),
-                    "title": get_model_label(object.__class__),
+                    "title": get_model_label(url_model),
                 }
             )
 
             parts.append(
                 {
                     "link": reverse_lazy(
-                        f"{current_app}:{object._meta.app_label}_{object._meta.model_name}_change",
+                        f"{current_app}:{url_meta.app_label}_{url_meta.model_name}_change",
                         args=[object.pk],
                     ),
                     "title": object,
@@ -958,3 +969,10 @@ def format_traceback(traceback: str) -> str:
 @register.filter
 def model_verbose_name(model: type[Model]) -> str:
     return str(model._meta.verbose_name)
+
+
+@register.filter
+def log_entry_ip(entry) -> str:
+    from backstage.dashboard.activity_labels import activity_log_entry_ip
+
+    return activity_log_entry_ip(entry) or "—"

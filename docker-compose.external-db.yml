@@ -1,0 +1,135 @@
+# External Postgres / RDS — no bundled db service; DB_* from .env only.
+# docker compose -f docker-compose.external-db.yml up -d --build
+
+name: ${COMPOSE_PROJECT_NAME:-myproject}
+
+x-logging: &default_logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-common-env: &common_env
+  REDIS_URL: redis://redis:6379
+  RUN_MIGRATIONS: "false"
+  RUN_COLLECTSTATIC: "false"
+
+x-common-runtime: &common_runtime
+  image: ${COMPOSE_PROJECT_NAME:-myproject}-backend:latest
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment:
+    <<: *common_env
+  logging: *default_logging
+  networks:
+    - app_net
+
+x-common-service: &common_service
+  <<: *common_runtime
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      APP_UID: ${APP_UID:-1000}
+      APP_GID: ${APP_GID:-1000}
+
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-myproject}_redis
+    restart: unless-stopped
+    mem_limit: ${REDIS_MEM_LIMIT:-512m}
+    logging: *default_logging
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app_net
+
+  web:
+    <<: *common_service
+    container_name: ${COMPOSE_PROJECT_NAME:-myproject}_web
+    mem_limit: ${WEB_MEM_LIMIT:-2g}
+    environment:
+      <<: *common_env
+      RUN_MIGRATIONS: "true"
+      RUN_COLLECTSTATIC: "true"
+    command: >
+      sh -c "gunicorn app.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers $${WEB_CONCURRENCY:-2}
+      --timeout=$${GUNICORN_TIMEOUT:-360}
+      --graceful-timeout=$${GUNICORN_GRACEFUL_TIMEOUT:-120}
+      --keep-alive=$${GUNICORN_KEEPALIVE:-10}
+      --max-requests=$${GUNICORN_MAX_REQUESTS:-1000}
+      --max-requests-jitter=$${GUNICORN_MAX_REQUESTS_JITTER:-100}
+      --access-logfile -
+      --error-logfile -"
+    # command: >
+    #   sh -c "uvicorn app.asgi:application
+    #   --host 0.0.0.0
+    #   --port 8000
+    #   --workers $${WEB_CONCURRENCY:-2}
+    #   --timeout-keep-alive $${UVICORN_KEEPALIVE_TIMEOUT:-10}
+    #   --proxy-headers
+    #   --forwarded-allow-ips='*'
+    #   --log-level info"
+    volumes:
+      - media_data:/app/media
+      - ./staticfiles:/app/staticfiles
+      - ./.secrets:/app/.secrets:rw
+    ports:
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${HOST_FORWARD_APP_PORT:-8000}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/healthz"]
+      interval: 15s
+      timeout: 30s
+      retries: 6
+      start_period: 600s
+
+  worker:
+    <<: *common_runtime
+    container_name: ${COMPOSE_PROJECT_NAME:-myproject}_worker
+    mem_limit: ${WORKER_MEM_LIMIT:-4g}
+    stop_grace_period: 30s
+    command: >
+      sh -c "celery -A app.celery:celery_app worker
+      --loglevel=INFO
+      --concurrency=$${CELERY_WORKER_CONCURRENCY:-2}
+      --max-tasks-per-child=$${CELERY_WORKER_MAX_TASKS_PER_CHILD:-20}
+      --prefetch-multiplier=$${CELERY_WORKER_PREFETCH_MULTIPLIER:-1}"
+    volumes:
+      - media_data:/app/media
+      - ./.secrets:/app/.secrets:rw
+    depends_on:
+      web:
+        condition: service_healthy
+
+  beat:
+    <<: *common_runtime
+    container_name: ${COMPOSE_PROJECT_NAME:-myproject}_beat
+    mem_limit: ${BEAT_MEM_LIMIT:-1g}
+    stop_grace_period: 30s
+    command: >
+      celery -A app.celery:celery_app beat --loglevel=INFO
+      --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      web:
+        condition: service_healthy
+
+networks:
+  app_net:
+    name: ${COMPOSE_PROJECT_NAME:-myproject}_net
+    driver: bridge
+
+volumes:
+  redis_data:
+  media_data:

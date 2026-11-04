@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import models
 
 from backstage.conf import get_inline_hub_options

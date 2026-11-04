@@ -12,7 +12,7 @@ from backstage.models import BackstageSettings
 from backstage.registry.base import SingletonAdmin
 from backstage.services import clear_backstage_settings_cache
 from backstage.theme_presets import THEME_PRESETS
-from backstage.widgets import AccentPaletteRadioWidget
+from backstage.widgets import AccentPaletteRadioWidget, BackstageAdminTextareaWidget
 
 
 class BackstageSettingsForm(forms.ModelForm):
@@ -39,10 +39,10 @@ class BackstageSettingsForm(forms.ModelForm):
             "frontend_url",
         )
         widgets = {
-            "custom_css": forms.Textarea(
+            "custom_css": BackstageAdminTextareaWidget(
                 attrs={
                     "rows": 8,
-                    "class": "font-mono text-sm w-full",
+                    "class": "font-mono",
                     "placeholder": "/* Optional custom admin CSS */",
                 }
             ),

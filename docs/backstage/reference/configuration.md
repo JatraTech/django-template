@@ -30,6 +30,7 @@ Machine-readable key list: [config-keys.yaml](config-keys.yaml) (keep in sync wi
 | `FORMS` | dict | Widget CSS class map |
 | `COLORS` | dict | Default palette tokens (often overridden in DB) |
 | `GLOBAL_CALLBACK` | str | Import path hook |
+| `TRUSTED_PROXY_COUNT` | int or null | Trusted reverse-proxy hops for admin activity IP (`None` = first X-Forwarded-For hop or `REMOTE_ADDR`) |
 | `DASHBOARD_CALLBACK` | str | `(request, context) -> context` after dashboard widgets built |
 | `DASHBOARD` | dict | Widget layout, stats, quick actions (see below) |
 | `DASHBOARD_TEMPLATE` | str or null | Full index template override; null = package `backstage/dashboard/index.html` |
@@ -66,7 +67,7 @@ Machine-readable key list: [config-keys.yaml](config-keys.yaml) (keep in sync wi
 | `stats` | List of stat cards (`model`, `filter`, `count_callback`, `link`, `icon`, `accent`, …) |
 | `quick_actions` | List of shortcuts (`model`, `action`: `add` \| `changelist` \| `change`, `singleton`) |
 | `my_drafts` | `{limit}` — draft copies from `DRAFT_PUBLISH.models` |
-| `recent_activity` | `{limit}` — current user admin log |
+| `recent_activity` | `{limit, show_change_detail, show_ip, full_list_url_name}` — dashboard feed; superusers see all staff actions, others see own |
 | `show_app_list` | When `true`, append legacy app/model table below widgets |
 
 Default layout when unset: `welcome`, `recent_activity` only.

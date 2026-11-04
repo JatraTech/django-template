@@ -34,7 +34,17 @@ BACKSTAGE = {
     "FIELD_EDITOR_META": FIELD_EDITOR_META,
     "TAB_DESCRIPTIONS": TAB_DESCRIPTIONS,
     "DASHBOARD": DASHBOARD,
+    # Production behind nginx: often 1. Omit locally.
+    # "TRUSTED_PROXY_COUNT": int(env("BACKSTAGE_TRUSTED_PROXY_COUNT")),
 }
+
+# Middleware — add AdminRequestMiddleware after AuthenticationMiddleware for admin activity IP:
+# MIDDLEWARE = [
+#     ...
+#     "django.contrib.auth.middleware.AuthenticationMiddleware",
+#     "backstage.middleware.AdminRequestMiddleware",
+#     ...
+# ]
 
 # Security & CORS — required for SPA preview (iframe calls API with X-Preview-Token):
 CORS_ALLOW_HEADERS = (

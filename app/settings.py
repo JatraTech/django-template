@@ -26,7 +26,6 @@ FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 DEFAULT_ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "0.0.0.0",
 ]
 DEFAULT_CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
@@ -50,6 +49,7 @@ DEFAULT_CSRF_TRUSTED_ORIGINS = [
 # Core Django
 # =============================================================================
 SECRET_KEY = env("SECRET_KEY", default="django-insecure-change-this-in-production")
+APP_ENV = env.str("APP_ENV", default="local").strip().lower()
 DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = ["*"] if DEBUG else env.list("ALLOWED_HOSTS", default=DEFAULT_ALLOWED_HOSTS)
 
@@ -349,7 +349,7 @@ if USE_S3_STORAGE:
 
 
 # =============================================================================
-# Communications
+# URLs & email
 # =============================================================================
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 EMAIL_RECIPIENTS_OVERRIDE = env.list("EMAIL_RECIPIENTS_OVERRIDE", default=[])
@@ -360,6 +360,31 @@ EMAIL_BACKEND = env(
 MS_GRAPH_CLIENT_ID = env("MS_GRAPH_CLIENT_ID", default="")
 MS_GRAPH_TENANT_ID = env("MS_GRAPH_TENANT_ID", default="")
 
+
+# =============================================================================
+# Logging
+# =============================================================================
+LOG_LEVEL = env("LOG_LEVEL", default="INFO")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"verbose": {"format": "{asctime} [{levelname}] {name}: {message}", "style": "{"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "verbose"}},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.server": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "gunicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "daphne": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+}
+
+
+# =============================================================================
+# Integrations
+# =============================================================================
 OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
 OPENAI_MODEL = env("OPENAI_MODEL", default="gpt-4o-mini")
 OPENAI_EMBEDDING_MODEL = env("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
@@ -406,25 +431,6 @@ BACKSTAGE = {
 
 
 # =============================================================================
-# Logging
-# =============================================================================
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {"verbose": {"format": "{asctime} [{levelname}] {name}: {message}", "style": "{"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "verbose"}},
-    "loggers": {
-        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "django.server": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "gunicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "daphne": {"handlers": ["console"], "level": "INFO", "propagate": False},
-    },
-    "root": {"handlers": ["console"], "level": "INFO"},
-}
-
-
-# =============================================================================
 # TinyMCE (admin rich text)
 # =============================================================================
 TINYMCE_DEFAULT_CONFIG = {
@@ -443,3 +449,13 @@ TINYMCE_DEFAULT_CONFIG = {
         "a:hover { color: var(--color-primary-700); }"
     ),
 }
+
+# =============================================================================
+# Optional / QA
+# =============================================================================
+DEMO_ENABLED = env.bool("DEMO_ENABLED", default=(APP_ENV != "production"))
+
+# =============================================================================
+# System checks
+# =============================================================================
+from app.utils import checks as _config_checks  # noqa: E402, F401

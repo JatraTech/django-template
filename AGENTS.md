@@ -2,6 +2,19 @@
 
 Guidance for Cursor agents working on this Django starter / Backstage reference repo.
 
+This repo is the **reference host** for vendored Backstage and the shared **env/Docker contract**. Product APIs in `office/` (MemBlue, CondHOA, Homesteadr, etc.) use the same [CONFIGURATION.md](docs/CONFIGURATION.md) but their own `AGENTS.md` content—see [project-documentation.md](docs/project-documentation.md) for the standard layout.
+
+## Documentation
+
+| Topic | Document |
+|-------|----------|
+| Doc index + read order | [`docs/README.md`](docs/README.md) |
+| Architecture hub | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Repo file layout, tiers, stubs (all products) | [`docs/project-documentation.md`](docs/project-documentation.md) |
+| Env, settings, Docker | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
+| Backstage CMS (topic) | [`docs/architecture/BACKSTAGE.md`](docs/architecture/BACKSTAGE.md) |
+| Backstage CMS (detail) | [`docs/backstage/integration.md`](docs/backstage/integration.md) |
+
 ## Backstage admin
 
 **Documentation:** [`docs/backstage/integration.md`](docs/backstage/integration.md) + [`docs/backstage/examples/backstage_host.example.py`](docs/backstage/examples/backstage_host.example.py).

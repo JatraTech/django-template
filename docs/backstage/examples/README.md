@@ -8,6 +8,7 @@
 | [host_seo_mixin.py](host_seo_mixin.py) | SEO tab field definitions |
 | [host_cms_api_utils.py](host_cms_api_utils.py) | DRF `get_singleton`, media URL helpers for public CMS APIs |
 | [host_singleton_viewset.py](host_singleton_viewset.py) | Read-only `ViewSet.list` for singleton pages |
+| [host_admin_utils.example.py](host_admin_utils.example.py) | `replace_admin`, hub inline helpers, `apply_host_overrides` for slim custom admins |
 
 Human onboarding: [../integration.md](../integration.md).
 

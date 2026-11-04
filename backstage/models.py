@@ -1,3 +1,4 @@
+from django.contrib.admin.models import LogEntry
 from django.db import models
 
 from backstage.accent_palettes import ACCENT_PALETTE_CHOICES, DEFAULT_ACCENT_PALETTE
@@ -86,9 +87,7 @@ class BackstageSettings(SingletonModel):
         self.pk = 1
         previous_logo_name = ""
         if BackstageSettings.objects.filter(pk=1).exists():
-            previous_logo_name = (
-                BackstageSettings.objects.values_list("logo_light", flat=True).get(pk=1) or ""
-            )
+            previous_logo_name = BackstageSettings.objects.values_list("logo_light", flat=True).get(pk=1) or ""
 
         new_logo_name = self.logo_light.name if self.logo_light else ""
         logo_changed = previous_logo_name != new_logo_name
@@ -97,3 +96,25 @@ class BackstageSettings(SingletonModel):
 
         if logo_changed and regenerate_favicon_light(self):
             super().save(update_fields=["favicon_light"])
+
+
+class AdminLogEntryMeta(models.Model):
+    log_entry = models.OneToOneField(
+        LogEntry,
+        on_delete=models.CASCADE,
+        related_name="backstage_meta",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Admin log entry metadata"
+        verbose_name_plural = "Admin log entry metadata"
+
+
+class AdminActivityLog(LogEntry):
+    class Meta:
+        proxy = True
+        app_label = "backstage"
+        verbose_name = "Admin activity"
+        verbose_name_plural = "Admin activity"

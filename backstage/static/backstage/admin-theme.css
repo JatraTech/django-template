@@ -39,7 +39,8 @@
 /* Theme-aligned hyperlinks in main content (destructive / pill nav excluded) */
 #content-main a[href]:where(
   :not(.backstage-row-action):not(.sortremove):not(.backstage-dashboard-welcome-link):not(
-      .backstage-dashboard-quick-action
+      .backstage-dashboard-module__header-link
+    ):not(.backstage-dashboard-quick-action
     ):not(.backstage-dashboard-stat):not(.related-widget-wrapper-link):not(
       .backstage-activity-item__link
     ):not(.backstage-changelist-link):not(.backstage-control):not([class*="text-red"])
@@ -51,7 +52,8 @@
 
 #content-main a[href]:where(
   :not(.backstage-row-action):not(.sortremove):not(.backstage-dashboard-welcome-link):not(
-      .backstage-dashboard-quick-action
+      .backstage-dashboard-module__header-link
+    ):not(.backstage-dashboard-quick-action
     ):not(.backstage-dashboard-stat):not(.related-widget-wrapper-link):not(
       .backstage-activity-item__link
     ):not(.backstage-changelist-link):not(.backstage-control):not([class*="text-red"])
@@ -61,7 +63,8 @@
 
 #content-main a[href]:where(
   :not(.backstage-row-action):not(.sortremove):not(.backstage-dashboard-welcome-link):not(
-      .backstage-dashboard-quick-action
+      .backstage-dashboard-module__header-link
+    ):not(.backstage-dashboard-quick-action
     ):not(.backstage-dashboard-stat):not(.related-widget-wrapper-link):not(
       .backstage-activity-item__link
     ):not(.backstage-changelist-link):not(.backstage-control):not([class*="text-red"])
@@ -71,7 +74,8 @@
 
 #content-main a[href]:where(
   :not(.backstage-row-action):not(.sortremove):not(.backstage-dashboard-welcome-link):not(
-      .backstage-dashboard-quick-action
+      .backstage-dashboard-module__header-link
+    ):not(.backstage-dashboard-quick-action
     ):not(.backstage-dashboard-stat):not(.related-widget-wrapper-link):not(
       .backstage-activity-item__link
     ):not(.backstage-changelist-link):not(.backstage-control):not([class*="text-red"])
@@ -1557,6 +1561,36 @@ body.change-list #content-main {
 
 .dark .backstage-dashboard-module__header {
   color: var(--color-base-100);
+}
+
+.backstage-dashboard-module__header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  transition: color var(--backstage-duration-fast) var(--backstage-ease);
+}
+
+.backstage-dashboard-module__header-link .material-symbols-outlined {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.backstage-dashboard-module__header-link:hover {
+  color: var(--color-primary-700);
+}
+
+.dark .backstage-dashboard-module__header-link {
+  color: var(--color-primary-500);
+}
+
+.dark .backstage-dashboard-module__header-link:hover {
+  color: var(--color-primary-400);
 }
 
 .backstage-dashboard-module__body {

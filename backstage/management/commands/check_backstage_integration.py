@@ -351,6 +351,18 @@ class Command(BaseCommand):
         unknown = [wid for wid in layout if wid not in known]
         if unknown:
             return [f"BACKSTAGE DASHBOARD layout contains unknown widget id(s): {', '.join(unknown)}."]
+        return self._admin_activity_middleware_warnings(layout)
+
+    def _admin_activity_middleware_warnings(self, layout: list[str]) -> list[str]:
+        if "recent_activity" not in layout:
+            return []
+        middleware = list(getattr(settings, "MIDDLEWARE", []))
+        if "backstage.middleware.AdminRequestMiddleware" not in middleware:
+            return [
+                'DASHBOARD includes "recent_activity" but MIDDLEWARE is missing '
+                '"backstage.middleware.AdminRequestMiddleware" after AuthenticationMiddleware — '
+                "admin activity IP metadata will not be recorded."
+            ]
         return []
 
     def _host_package_import_warnings(self) -> list[str]:

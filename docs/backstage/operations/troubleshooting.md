@@ -40,6 +40,18 @@ Model lacks editable fields whose names match `SEO_FIELD_NAMES` (defaults in `co
 
 Add entries to `FIELD_EDITOR_META` for that lowercase model name. Custom `ModelAdmin` without `EditorMetadataMixin` will not apply meta.
 
+## Form fields look flush (no padding) in admin
+
+Model fields get Backstage widgets from `backstage/overrides.py`. Extra fields on a custom `ModelAdmin` form or `ModelForm.Meta.widgets` must use `BackstageAdmin*` classes from `backstage/widgets.py` (for example `BackstageAdminTextareaWidget`, `BackstageAdminCheckboxSelectMultipleWidget`). Raw `forms.Textarea` or `forms.CheckboxSelectMultiple` skip theme padding and look wrong under Tailwind preflight.
+
+## Sidebar link visible but change view returns 403
+
+Sidebar items use the same rule as the Django app index: `ModelAdmin.has_view_permission(request)` on the registered admin class. If a link appears but the view is forbidden, check django permissions and any custom `has_view_permission` / `has_module_permission` on that admin. If a link should be hidden, fix the admin permission methods or remove the model from `NAV_GROUPS.models` (allowlist only — it does not grant access).
+
+## Primary button text invisible in changelist / `list_display`
+
+`admin-theme.css` styles most `#content-main a[href]` as link-colored text. Anchors styled only with `bg-primary-600` keep that link color, so label text can disappear on a filled button. Use the Backstage button component in templates, or `format_html` with classes such as `backstage-control`, `text-primary-foreground`, and `bg-primary-600` together.
+
 ## Theme / CSS broken after edit
 
 Rebuild admin CSS:

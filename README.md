@@ -4,6 +4,8 @@ A production-ready Django REST API template with modern best practices, pre-conf
 
 **Frontend counterpart:** [`../react-marketing-template`](../react-marketing-template) — Vite + React marketing SPA (SEO prerender, RTK Query, Backstage preview).
 
+**Documentation index:** [`docs/README.md`](docs/README.md). **Repository documentation standard:** [`docs/project-documentation.md`](docs/project-documentation.md) (layout for every `office/` Django API + sibling SPA).
+
 ## Features
 
 - Django 5.2 + Django REST Framework + JWT Authentication
@@ -49,6 +51,8 @@ cd django_template
 cp .env.example .env   # Configure your environment
 docker compose up --build
 ```
+
+Configuration (env sections, settings order, compose files): [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md). For external Postgres / RDS use `docker compose -f docker-compose.external-db.yml up -d --build`. Compose `web` health uses `/healthz` with a 5-minute `start_period` for cold-start migrate and Gunicorn boot (see CONFIGURATION.md).
 
 Access at:
 

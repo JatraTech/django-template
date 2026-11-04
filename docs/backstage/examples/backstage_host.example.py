@@ -40,6 +40,12 @@ NAV_GROUPS = {
         "title": _("System"),
         "icon": "settings",
         "apps": ["backstage", "auth"],
+        "models": [
+            "auth.Group",
+            "auth.User",
+            "backstage.BackstageSettings",
+            "backstage.AdminActivityLog",
+        ],
     },
 }
 
@@ -48,11 +54,13 @@ MODEL_ICONS = {
     "aboutpage": "info",
     "blogpost": "newspaper",
     "backstagesettings": "palette",
+    "adminactivitylog": "history",
 }
 
 MODEL_LABELS: dict[str, str] = {
     "group": _("Groups"),
     "user": _("Users"),
+    "adminactivitylog": _("Admin activity"),
 }
 
 # Optional: compile parent→child inlines from config (see integration.md)
@@ -100,7 +108,12 @@ DASHBOARD = {
         {"label": _("New post"), "model": "blog.blogpost", "action": "add", "icon": "edit_square"},
     ],
     "my_drafts": {"limit": 6},
-    "recent_activity": {"limit": 8},
+    "recent_activity": {
+        "limit": 8,
+        "show_change_detail": True,
+        "show_ip": True,
+        "full_list_url_name": "admin:backstage_adminactivitylog_changelist",
+    },
 }
 
 ADMIN_OVERRIDES = {

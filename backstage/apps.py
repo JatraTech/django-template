@@ -28,8 +28,8 @@ class BackstageConfig(AppConfig):
 
         from django.conf import settings
 
-        from backstage.registry.relations import apply_compiled_relations_to_settings
         from backstage.registry.autodiscover import register_all_models
+        from backstage.registry.relations import apply_compiled_relations_to_settings
         from backstage.registry.settings_admin import BackstageSettingsAdmin  # noqa: F401
 
         apply_compiled_relations_to_settings(settings)
@@ -39,3 +39,10 @@ class BackstageConfig(AppConfig):
             _ensure_backstage_settings_on_migrate,
             dispatch_uid="backstage.ensure_settings",
         )
+
+        from backstage.activity import signals  # noqa: F401
+
+        from backstage.admin_activity import AdminActivityLogAdmin
+        from backstage.models import AdminActivityLog
+
+        admin.site.register(AdminActivityLog, AdminActivityLogAdmin)

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from django.contrib.admin.models import LogEntry
 from django.contrib.admin.sites import AdminSite
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
@@ -11,7 +10,10 @@ from django.utils.translation import gettext_lazy as _
 from backstage.branding import resolve_text
 from backstage.conf import get_model_label
 from backstage.dashboard.activity_labels import (
+    activity_change_detail,
     activity_context_label,
+    activity_log_entry_ip,
+    activity_log_queryset,
     human_activity_title,
     parse_inline_objects,
 )
@@ -300,13 +302,13 @@ def build_my_drafts(request: HttpRequest, admin_site: AdminSite, dashboard_confi
     return {"rows": rows[:limit], "limit": limit}
 
 
-def build_recent_activity(request: HttpRequest, dashboard_config: dict[str, Any]) -> list[dict[str, Any]]:
-    limit = int((dashboard_config.get("recent_activity") or {}).get("limit") or 10)
-    entries = (
-        LogEntry.objects.select_related("content_type", "user")
-        .filter(user_id=request.user.pk)
-        .order_by("-action_time")[:limit]
-    )
+def build_recent_activity(request: HttpRequest, dashboard_config: dict[str, Any]) -> dict[str, Any]:
+    ra_cfg = dashboard_config.get("recent_activity") or {}
+    limit = int(ra_cfg.get("limit") or 10)
+    show_change_detail = bool(ra_cfg.get("show_change_detail", True))
+    show_ip = bool(ra_cfg.get("show_ip", True))
+    show_actor = bool(request.user.is_superuser)
+    entries = activity_log_queryset(request)[:limit]
 
     activity: list[dict[str, Any]] = []
     for entry in entries:
@@ -318,6 +320,9 @@ def build_recent_activity(request: HttpRequest, dashboard_config: dict[str, Any]
             {
                 "title": title,
                 "context_label": context_label,
+                "change_detail": activity_change_detail(entry) if show_change_detail else "",
+                "ip_address": activity_log_entry_ip(entry) if show_ip else "",
+                "actor_label": str(entry.user) if entry.user_id and show_actor else "",
                 "admin_url": admin_url,
                 "action_time": entry.action_time,
                 "user_repr": str(entry.user) if entry.user_id else "",
@@ -325,4 +330,10 @@ def build_recent_activity(request: HttpRequest, dashboard_config: dict[str, Any]
             }
         )
 
-    return activity
+    return {
+        "entries": activity,
+        "full_list_url_name": ra_cfg.get("full_list_url_name"),
+        "show_change_detail": show_change_detail,
+        "show_ip": show_ip,
+        "show_actor": show_actor,
+    }

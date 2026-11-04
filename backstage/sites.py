@@ -20,6 +20,7 @@ from django.utils.module_loading import import_string
 from backstage import branding
 from backstage.conf import get_sidebar_group_collapse
 from backstage.dataclasses import DropdownItem, Favicon, SearchResult
+from backstage.nav_permissions import nav_item_allowed, nav_items_any_allowed
 from backstage.registry.navigation import get_backstage_sidebar
 from backstage.settings import get_config
 
@@ -316,6 +317,9 @@ class BackstageAdminSite(AdminSite):
 
             group["items"] = self._get_navigation_items(request, group["items"], tabs)
 
+            if not nav_items_any_allowed(group["items"]):
+                continue
+
             # Badge callbacks
             if "badge" in group and isinstance(group["badge"], str):
                 try:
@@ -344,6 +348,7 @@ class BackstageAdminSite(AdminSite):
         *,
         is_tab: bool = False,
         link_query: str = "",
+        request_query: str = "",
     ) -> bool:
         request_path = self._normalize_admin_path(request_path)
         link_path = self._normalize_admin_path(link_path)
@@ -355,7 +360,7 @@ class BackstageAdminSite(AdminSite):
         if request_path == link_path or request_path.startswith(link_path):
             if is_tab and link_query:
                 query_params = parse_qs(link_query)
-                request_params = parse_qs(request.GET.urlencode())
+                request_params = parse_qs(request_query)
                 if not all(request_params.get(k) == v for k, v in query_params.items()):
                     return False
             return True
@@ -413,8 +418,8 @@ class BackstageAdminSite(AdminSite):
             if isinstance(link, Callable):
                 item["link_callback"] = lazy(link)(request)
 
-            # Permission callback
-            item["has_permission"] = self._call_permission_callback(item.get("permission"), request)
+            callback_ok = self._call_permission_callback(item.get("permission"), request)
+            item["has_permission"] = nav_item_allowed(request, self, item, callback_ok)
 
             # Badge callbacks
             if "badge" in item and isinstance(item["badge"], str):
@@ -457,10 +462,11 @@ class BackstageAdminSite(AdminSite):
             allowed_items = []
 
             for item in tab["items"]:
-                item["has_permission"] = self._call_permission_callback(item.get("permission"), request)
-
                 if isinstance(item["link"], Callable):
                     item["link_callback"] = lazy(item["link"])(request)
+
+                callback_ok = self._call_permission_callback(item.get("permission"), request)
+                item["has_permission"] = nav_item_allowed(request, self, item, callback_ok)
 
                 if "active" not in item:
                     item["active"] = self._get_is_active(request, item.get("link_callback") or item["link"], True)
@@ -509,6 +515,7 @@ class BackstageAdminSite(AdminSite):
             parsed.path,
             is_tab=is_tab,
             link_query=parsed.query,
+            request_query=request.GET.urlencode(),
         )
 
     def _get_is_tab_active(self, request: HttpRequest, tabs: list[dict], nav_link: str) -> bool:

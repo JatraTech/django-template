@@ -3,12 +3,18 @@
 <div class="backstage-dashboard-module backstage-dashboard-module--activity-stretch backstage-surface-card">
  <div class="backstage-dashboard-module__header">
   <span class="material-symbols-outlined backstage-dashboard-module__header-icon" aria-hidden="true">schedule</span>
-  {% trans "Recent activity" %}
+  <span>{% trans "Recent activity" %}</span>
+  {% if activity.full_list_url_name %}
+  <a href="{% url activity.full_list_url_name %}" class="backstage-dashboard-module__header-link">
+   <span class="material-symbols-outlined" aria-hidden="true">history</span>
+   <span>{% trans "View all activity" %}</span>
+  </a>
+  {% endif %}
  </div>
  <div class="backstage-dashboard-module__body backstage-dashboard-module__body--flush">
-  {% if activity %}
+  {% if activity.entries %}
   <ul class="backstage-activity-feed">
-   {% for entry in activity %}
+   {% for entry in activity.entries %}
    <li class="backstage-activity-item">
     <span class="backstage-activity-avatar" title="{{ entry.user_repr }}">{{ entry.user_initials }}</span>
     <div class="backstage-activity-item__content">
@@ -19,8 +25,13 @@
       {{ entry.title }}
       {% endif %}
      </div>
+     {% if activity.show_change_detail and entry.change_detail %}
+     <div class="backstage-activity-item__detail text-sm text-muted-foreground">{{ entry.change_detail }}</div>
+     {% endif %}
      <div class="backstage-activity-item__meta">
+      {% if activity.show_actor and entry.actor_label %}{{ entry.actor_label }} · {% endif %}
       {% if entry.context_label %}{{ entry.context_label }} · {% endif %}
+      {% if activity.show_ip and entry.ip_address %}{{ entry.ip_address }} · {% elif activity.show_ip and not entry.ip_address %}— · {% endif %}
       <time datetime="{{ entry.action_time|date:'c' }}" title="{{ entry.action_time }}">{% blocktranslate with time=entry.action_time|timesince %}{{ time }} ago{% endblocktranslate %}</time>
      </div>
     </div>
