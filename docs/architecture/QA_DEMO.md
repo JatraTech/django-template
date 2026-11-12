@@ -1,6 +1,4 @@
-<!-- Optional topic: copy when the product has QA quick-login or demo seed. Never enable in production.
-     Filled examples: office/condhoa/condhoa-backend/docs/architecture/QA_DEMO.md,
-     office/memblue/memblue-backend/docs/architecture/QA_DEMO.md -->
+<!-- Optional topic: copy when the product has QA quick-login or demo seed. Never enable in production. -->
 
 # QA demo (optional)
 

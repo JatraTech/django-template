@@ -1,6 +1,6 @@
 # Configuration contract
 
-Repo file layout and `AGENTS.md` conventions: [project-documentation.md](project-documentation.md).
+Documentation index and layout: [README.md](README.md).
 
 How environment variables, `app/settings.py`, and Docker Compose fit together. New projects should follow this layout; production apps (Boss, Homesteadr, memblue) use external Postgres with a single compose file (or `docker-compose.external-db.yml` in django-template).
 

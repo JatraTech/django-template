@@ -1,6 +1,6 @@
 # Backstage CMS (django-template host)
 
-This topic applies to **django-template** and other repos that embed the vendored Backstage admin. Typical tenancy SPAs do not copy this file.
+This topic applies to **django-template** and other repos that depend on the [`django-backstage`](https://github.com/JatraTech/django-backstage) package. Typical tenancy SPAs do not copy this file.
 
 ## Overview
 
@@ -10,9 +10,9 @@ Themed Django admin CMS: draft/publish, navigation, appearance, and host wiring 
 
 | Document | Role |
 |----------|------|
-| [backstage/README.md](../backstage/README.md) | Backstage doc index |
-| [backstage/integration.md](../backstage/integration.md) | Host integration guide |
-| [backstage/guides/copy-to-new-project.md](../backstage/guides/copy-to-new-project.md) | Vendoring into another repo |
+| [django-backstage docs](https://github.com/JatraTech/django-backstage/tree/main/docs) | Canonical manual (integration, reference, features) |
+| [integration.md](https://github.com/JatraTech/django-backstage/blob/main/docs/integration.md) | Host integration guide |
+| [reference-host.md](../backstage/reference-host.md) | Sample-app QA on django-template |
 
 ## Related docs
 

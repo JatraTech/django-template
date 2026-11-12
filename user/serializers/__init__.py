@@ -7,7 +7,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from app import settings
-from app.utils.mixins.serializers import (
+from django_jt.mixins.serializers import (
     BaseModelSerializer,
     ExtendableModelSerializer,
 )
@@ -113,7 +113,7 @@ class PartialUserCreationSerializer(BaseModelSerializer):
         admin_emails = (
             User.objects.filter(notify_on_user_reg=True, is_active=True)
             .filter(
-                Q(user_role__in=[UserRoleChoices.ADMIN, UserRoleChoices.SUPER_ADMIN])
+                Q(user_role=UserRoleChoices.ADMIN)
                 | Q(is_superuser=True)
                 | Q(is_staff=True)
             )

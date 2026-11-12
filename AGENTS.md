@@ -2,7 +2,7 @@
 
 Guidance for Cursor agents working on this Django starter / Backstage reference repo.
 
-This repo is the **reference host** for vendored Backstage and the shared **env/Docker contract**. Product APIs in `office/` (MemBlue, CondHOA, Homesteadr, etc.) use the same [CONFIGURATION.md](docs/CONFIGURATION.md) but their own `AGENTS.md` content—see [project-documentation.md](docs/project-documentation.md) for the standard layout.
+This repo is the **reference host** for [django-backstage](https://github.com/JatraTech/django-backstage) and [django-jt](https://github.com/JatraTech/django-jt) (DRF utilities, optional Gmail/Graph mail) plus the shared **env/Docker contract**. Product backends copy [CONFIGURATION.md](docs/CONFIGURATION.md) and maintain their own `AGENTS.md`.
 
 ## Documentation
 
@@ -10,14 +10,15 @@ This repo is the **reference host** for vendored Backstage and the shared **env/
 |-------|----------|
 | Doc index + read order | [`docs/README.md`](docs/README.md) |
 | Architecture hub | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
-| Repo file layout, tiers, stubs (all products) | [`docs/project-documentation.md`](docs/project-documentation.md) |
 | Env, settings, Docker | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
 | Backstage CMS (topic) | [`docs/architecture/BACKSTAGE.md`](docs/architecture/BACKSTAGE.md) |
-| Backstage CMS (detail) | [`docs/backstage/integration.md`](docs/backstage/integration.md) |
+| Backstage CMS (detail) | [django-backstage integration](https://github.com/JatraTech/django-backstage/blob/main/docs/integration.md) |
+| Backstage QA (this host) | [`docs/backstage/reference-host.md`](docs/backstage/reference-host.md) |
+| Analytics / export (reference only; not in template) | [`docs/architecture/product_api_patterns.md`](docs/architecture/product_api_patterns.md) |
 
 ## Backstage admin
 
-**Documentation:** [`docs/backstage/integration.md`](docs/backstage/integration.md) + [`docs/backstage/examples/backstage_host.example.py`](docs/backstage/examples/backstage_host.example.py).
+**Documentation:** [integration.md](https://github.com/JatraTech/django-backstage/blob/main/docs/integration.md) + [backstage_host.example.py](https://github.com/JatraTech/django-backstage/blob/main/docs/examples/backstage_host.example.py).
 
 **Host file:** [`app/backstage_host.py`](app/backstage_host.py) (nav, overrides, editor meta, preview for **`sample`** models).
 
@@ -28,13 +29,23 @@ Editor copy: model-first; use `backstage_host.py` for jargon, inlines, and rich-
 ## Commands
 
 ```bash
-cd django_template
+uv run python manage.py check
 uv run python manage.py check_backstage_integration
 uv run pytest app/tests -q
 ```
 
-Package development source: sibling [`bpi-backend/backstage/`](../bpi/bpi-backend/backstage/).
+## Verification
+
+```bash
+uv sync
+uv run python manage.py check
+uv run python manage.py check_backstage_integration
+uv run pytest app/tests -q
+uv run python -c "from django_jt.health import liveness; from django_jt.drf.spectacular import SpectacularRapiDocView"
+```
+
+**Shared utilities:** DRF/auth/email from `django_jt`; Backstage rich text + TinyMCE upload from `django-backstage` (`backstage.views.tinymce_upload`, `backstage.mixins.rich_text`). This template has no `app/utils/` or `app/admin/` trees.
 
 ## Preview API
 
-[`docs/backstage/features/preview-and-frontend.md`](docs/backstage/features/preview-and-frontend.md).
+[preview and frontend](https://github.com/JatraTech/django-backstage/blob/main/docs/features/preview-and-frontend.md).

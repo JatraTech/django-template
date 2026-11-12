@@ -3,7 +3,7 @@ from django.db.models.functions import Concat
 from django.db.models.functions.text import Value
 from rest_framework import decorators, parsers, response
 
-from app.utils.mixins.views import BaseModelViewSet
+from django_jt.mixins.views import BaseModelViewSet
 from user.filters import UserFilterSet
 from user.models import User
 from user.serializers import (

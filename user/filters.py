@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from app.utils.filters import BaseModelFilterSet
+from django_jt.filters import BaseModelFilterSet
 from user.models import User
 
 

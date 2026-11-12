@@ -89,6 +89,7 @@ THIRD_PARTY_APPS = [
     "storages",
 ]
 LOCAL_APPS = [
+    "django_jt",
     "user",
     "sample",
 ]
@@ -117,7 +118,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_userforeignkey.middleware.UserForeignKeyMiddleware",
-    "app.middlewares.OverrideContentTypeMiddleware",
+    "django_jt.middleware.OverrideContentTypeMiddleware",
 ]
 
 TEMPLATES = [
@@ -173,8 +174,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 AUTHENTICATION_BACKENDS = [
-    "app.utils.backends.authentication.StatusBackend",
+    "django_jt.backends.authentication.StatusBackend",
 ]
+# Browser Auth901 OIDC: set AUTH901_CLIENT_ID, add mozilla_django_oidc, include django_jt.urls.
 
 
 # =============================================================================
@@ -184,14 +186,14 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
-    "DEFAULT_PAGINATION_CLASS": "app.utils.pagination.StandardPagination",
-    "DEFAULT_RENDERER_CLASSES": ("app.utils.renderers.SuccessJsonResponse",),
+    "DEFAULT_PAGINATION_CLASS": "django_jt.pagination.StandardPagination",
+    "DEFAULT_RENDERER_CLASSES": ("django_jt.renderers.SuccessJsonResponse",),
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_FILTER_BACKENDS": (
-        "django_filters.rest_framework.DjangoFilterBackend",
-        "app.utils.filters.ExtendedSearchFilter",
-        "app.utils.filters.AudienceFilter",
-        "app.utils.ordering.CustomOrderingFilter",
+        "django_jt.filters.FilterBackend",
+        "django_jt.filters.ExtendedSearchFilter",
+        "django_jt.filters.AudienceFilter",
+        "django_jt.ordering.CustomOrderingFilter",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -199,7 +201,7 @@ REST_FRAMEWORK = {
 }
 
 DRF_STANDARDIZED_ERRORS = {
-    "EXCEPTION_FORMATTER_CLASS": "app.utils.exceptions.ExceptionFormatter",
+    "EXCEPTION_FORMATTER_CLASS": "django_jt.exceptions.ExceptionFormatter",
 }
 
 SPECTACULAR_SETTINGS = {
@@ -455,7 +457,4 @@ TINYMCE_DEFAULT_CONFIG = {
 # =============================================================================
 DEMO_ENABLED = env.bool("DEMO_ENABLED", default=(APP_ENV != "production"))
 
-# =============================================================================
-# System checks
-# =============================================================================
-from app.utils import checks as _config_checks  # noqa: E402, F401
+# validate_app_env and encryption checks register via django_jt AppConfig

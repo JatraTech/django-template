@@ -12,10 +12,11 @@ For a new product, replace the paragraph above with what your API does (tenancy 
 | Backstage CMS (django-template host only) | [architecture/BACKSTAGE.md](architecture/BACKSTAGE.md) |
 | QA demo (optional; non-production) | [architecture/QA_DEMO.md](architecture/QA_DEMO.md) |
 | Deployment environments | [architecture/DEPLOYMENT_ENVIRONMENTS.md](architecture/DEPLOYMENT_ENVIRONMENTS.md) |
+| Product analytics / export (not in template runtime) | [architecture/product_api_patterns.md](architecture/product_api_patterns.md) |
 
 Add a row per real topic (`SITES.md`, `PLANS.md`, …). Do not duplicate topic body in this file — edit the topic doc under `architecture/`.
 
 ## What not to document here
 
 - Env, Docker, Redis — [CONFIGURATION.md](CONFIGURATION.md).
-- Backstage implementation detail — [backstage/](backstage/) (django-template only).
+- Backstage implementation detail — [django-backstage docs](https://github.com/JatraTech/django-backstage/tree/main/docs); reference host: [backstage/reference-host.md](backstage/reference-host.md).

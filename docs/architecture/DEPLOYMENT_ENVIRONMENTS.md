@@ -1,6 +1,6 @@
 # Deployment environments
 
-Reference contract for local, staging, and production. **Filled example:** [CondHOA](../../../condhoa/condhoa-backend/docs/architecture/DEPLOYMENT_ENVIRONMENTS.md).
+Reference contract for local, staging, and production. Copy this file into product repos and customize hostnames and compose filenames.
 
 ## Variables
 
@@ -20,7 +20,7 @@ Defaults in `app/settings.py`: `DEMO_ENABLED` defaults to on when `APP_ENV` is n
 | `staging` | `0` | `1` (typical) |
 | `production` | `0` | `0` |
 
-Startup check `validate_app_env` (see `app/utils/checks.py`): production refuses `DEMO_ENABLED` or `DEBUG`.
+Startup check `validate_app_env` (see `django_jt.checks`): production refuses `DEMO_ENABLED` or `DEBUG`.
 
 ## Env files
 

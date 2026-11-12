@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
-from app.utils.fields import OptimizedImageField
-from app.utils.mixins.models import ModelMixin
+from django_jt.fields import OptimizedImageField
+from django_jt.mixins.models import ModelMixin
 from user.constants import AccessHaltReasonChoices, UserRoleChoices
 
 

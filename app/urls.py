@@ -11,9 +11,9 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from app.admin.tinymce_upload import tinymce_upload
-from app.health import liveness
-from app.views import SpectacularElementsView, SpectacularRapiDocView
+from backstage.views import tinymce_upload
+from django_jt.drf.spectacular import SpectacularElementsView, SpectacularRapiDocView
+from django_jt.health import liveness
 
 from .urls_api import urlpatterns as api_urls
 

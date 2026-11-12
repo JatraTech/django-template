@@ -26,7 +26,7 @@ class SendResetPasswordEmailSerializer(serializers.Serializer):
             "user": user,
             "uidb64": uidb64,
             "token": token,
-            "domain": settings.APP_FRONTEND_BASE_URL,
+            "domain": settings.FRONTEND_URL,
         }
         template_to_str = render_to_string(reset_email_template, context)
 

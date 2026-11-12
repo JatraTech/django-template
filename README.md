@@ -2,9 +2,9 @@
 
 A production-ready Django REST API template with modern best practices, pre-configured authentication, async task processing, and Docker support.
 
-**Frontend counterpart:** [`../react-marketing-template`](../react-marketing-template) — Vite + React marketing SPA (SEO prerender, RTK Query, Backstage preview).
+**Frontend counterpart:** [reactjs-ts-template](https://github.com/JatraTech/reactjs-ts-template) — Vite + React marketing SPA (SEO prerender, RTK Query, Backstage preview).
 
-**Documentation index:** [`docs/README.md`](docs/README.md). **Repository documentation standard:** [`docs/project-documentation.md`](docs/project-documentation.md) (layout for every `office/` Django API + sibling SPA).
+**Documentation index:** [`docs/README.md`](docs/README.md).
 
 ## Features
 
@@ -17,11 +17,11 @@ A production-ready Django REST API template with modern best practices, pre-conf
 - AWS S3 integration, Google OAuth support
 - Universal Redis DB-index convention (broker /0, results /1, cache /2, channels /3)
 - Production-ready with Gunicorn & optional Nginx
-- **Backstage admin** — vendored themed CMS UI (`backstage/`) with a **`sample`** app for draft/publish, navigation, and appearance settings
+- **Backstage admin** — [`django-backstage`](https://github.com/JatraTech/django-backstage) themed CMS UI with a **`sample`** app for draft/publish, navigation, and appearance settings
 
 ## Backstage admin (reference host)
 
-This template includes a **vendored copy** of the Backstage package from the BPI repo (`backstage/` at project root). It is wired via [`app/backstage_host.py`](app/backstage_host.py) and the [`sample`](sample/) app (demo articles, singleton pages, inquiries).
+This template depends on [**django-backstage**](https://github.com/JatraTech/django-backstage) and [**django-jt**](https://github.com/JatraTech/django-jt) (see `pyproject.toml` — git URL or local path dependency for development). It is wired via [`app/backstage_host.py`](app/backstage_host.py) and the [`sample`](sample/) app (demo articles, singleton pages, inquiries).
 
 After `migrate` and `createsuperuser`, open **http://localhost:8000/admin/** and exercise:
 
@@ -37,7 +37,7 @@ Verify wiring:
 uv run python manage.py check_backstage_integration
 ```
 
-**Documentation:** [`docs/backstage/README.md`](docs/backstage/README.md) — start with [`integration.md`](docs/backstage/integration.md).
+**Documentation:** [django-backstage docs](https://github.com/JatraTech/django-backstage/tree/main/docs) — local reference host: [`docs/backstage/reference-host.md`](docs/backstage/reference-host.md). TinyMCE image upload: `backstage.views.tinymce_upload` (see `app/urls.py`); JS ships in the package static `admin/tinymce_upload.js`.
 
 Do not add custom `@admin.register` in app `admin.py` files for models Backstage autodiscovers; use `ADMIN_OVERRIDES` in `backstage_host.py` instead (see `user/admin.py`).
 
@@ -137,7 +137,7 @@ If `HOST_FORWARD_APP_PORT` is not `8000`, update `CORS_ALLOWED_ORIGINS`, `CSRF_T
 | **Docker Compose** | `COMPOSE_PROJECT_NAME`, `HOST_*`, `*_MEM_LIMIT`, Gunicorn/Celery worker vars | Ignored if you run Django without Compose |
 | **Optional features** | `USE_S3_STORAGE` + `AWS_*`, `CHANNELS_ENABLED`, `EMAIL_BACKEND`, `EMAIL_RECIPIENTS_OVERRIDE`, `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_TENANT_ID`, `OPENAI_*` | See [Email](#email-console--gmail--microsoft-graph) and optional dependency groups below |
 
-Trim unused core dependencies (for example `polars` / `styleframe`) only if you remove the Excel export mixins that import them.
+Analytics and XLSX export are not part of this starter; when you need them in a product API, see [docs/architecture/product_api_patterns.md](docs/architecture/product_api_patterns.md).
 
 ### Redis DB Registry
 
@@ -165,14 +165,14 @@ By default, `EMAIL_BACKEND` is Django’s **console** backend (messages print to
 | Backend | `EMAIL_BACKEND` value | Setup |
 |---------|----------------------|--------|
 | Console (default) | *(omit or use default in settings)* | None |
-| Gmail | `app.utils.backends.email.gmail.GmailBackend` | OAuth: Desktop client JSON at `.secrets/google_client_secret.json`, token at `.secrets/google_token.json`. Run `python manage.py gmail_oauth_token` once (re-run if refresh fails). Set `DEFAULT_FROM_EMAIL` to the signed-in Gmail address. Uses Celery when a worker is running. |
-| Microsoft Graph | `app.utils.backends.email.graph.GraphEmailBackend` | Azure app (public client): `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_TENANT_ID`. Token cache at `.secrets/ms_graph_msal_cache.json` (same pattern as Gmail credentials). Run `python manage.py graph_auth` once, then again if silent token refresh fails. |
+| Gmail | `django_jt.backends.email.gmail.GmailBackend` | OAuth: Desktop client JSON at `.secrets/google_client_secret.json`, token at `.secrets/google_token.json`. Run `python manage.py gmail_oauth_token` once (re-run if refresh fails). Set `DEFAULT_FROM_EMAIL` to the signed-in Gmail address. Uses Celery when a worker is running. |
+| Microsoft Graph | `django_jt.backends.email.graph.GraphEmailBackend` | Azure app (public client): `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_TENANT_ID`. Token cache at `.secrets/ms_graph_msal_cache.json` (same pattern as Gmail credentials). Run `python manage.py graph_auth` once, then again if silent token refresh fails. |
 
 For staging, set `EMAIL_RECIPIENTS_OVERRIDE` to a comma-separated list so **Gmail and Graph** only deliver to those addresses.
 
-When a Celery worker is running (or `CELERY_TASK_ALWAYS_EAGER=true` in tests), both Gmail and Graph backends queue sends via `send_gmail_emails` / `send_graph_emails` tasks. If no worker is reachable, **web** sends synchronously in-process (same secrets required). Silent OAuth refresh updates token files under `.secrets` when the mount is writable (Compose uses `:rw` on **web** and **worker**). Populate `.secrets/` on the host before using Gmail or Graph in Compose.
+When a Celery worker is running (or `CELERY_TASK_ALWAYS_EAGER=true` in tests), both Gmail and Graph backends queue sends via `django_jt.backends.email.tasks.send_gmail_emails` / `send_graph_emails` (registered when `django_jt` loads; django-jt detects eager/worker automatically). This template does not define `app/tasks.py`. If no worker is reachable, **web** sends synchronously in-process (same secrets required). Silent OAuth refresh updates token files under `.secrets` when the mount is writable (Compose uses `:rw` on **web** and **worker**). Populate `.secrets/` on the host before using Gmail or Graph in Compose.
 
-Projects migrated from **caissak12-backend** should use `app.utils.backends.email.graph.GraphEmailBackend` instead of `app.email.graph_backend.GraphEmailBackend`.
+Projects migrated from **caissak12-backend** should use `django_jt.backends.email.graph.GraphEmailBackend` instead of `app.email.graph_backend.GraphEmailBackend`.
 
 ### Docker Compose
 
@@ -230,6 +230,15 @@ Install the handler dependency, then add a Loki handler to `LOGGING` in `app/set
 
 ```bash
 uv sync --group observability
+```
+
+## Verification
+
+```bash
+uv sync
+uv run python manage.py check
+uv run python manage.py check_backstage_integration
+uv run pytest app/tests -q
 ```
 
 ## Production deploy (GitHub Actions)
@@ -328,7 +337,7 @@ def your_task():
 
 Staging uses [`docker-compose.staging.yml`](docker-compose.staging.yml) (separate Compose project, `:staging` image tag, `{name}_staging_net` network, isolated volumes). It mirrors `docker-compose.yml` for services, limits, and HTTP server blocks—when you change production compose, apply the same edit to staging except for the staging `name`, image tag, container names, and network name. Set `COMPOSE_PROJECT_NAME`, `DB_NAME`, `HOST_FORWARD_APP_PORT`, and `HOST_BIND_ADDRESS` in staging `.env` so staging does not collide with production on the same host (use a different host port than prod, e.g. `8001`).
 
-**Frontend:** pair with [`../react-marketing-template`](../react-marketing-template) — use its `deploy-production.yml` / `deploy-staging.yml` (static `dist/` rsync) for the React site.
+**Frontend:** pair with [reactjs-ts-template](https://github.com/JatraTech/reactjs-ts-template) — use its deploy workflows (static `dist/` rsync) for the React site.
 
 ## License
 
