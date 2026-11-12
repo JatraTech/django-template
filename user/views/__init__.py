@@ -16,7 +16,7 @@ from user.serializers import (
 class UserViewSet(BaseModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    serializers = {
+    action_serializers = {
         "upload_image": UserImageUploadSerializer,
         "create_partial_user": PartialUserCreationSerializer,
     }
